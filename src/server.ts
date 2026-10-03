@@ -6,7 +6,9 @@ import { env } from "./config.js";
 import { healthRoutes } from "./routes/health.js";
 import { userRoutes } from "./routes/user.js";
 import { sellerRoutes } from "./routes/seller.js";
-import { adminRoutes } from "./routes/admin.js";
+import { adminRoutes, sellerApplicationRoutes } from "./routes/admin.js";
+import { authRoutes } from "./routes/auth.js";
+import { categoryRoutes } from "./routes/categories.js";
 
 const app = Fastify({ logger: true });
 
@@ -18,9 +20,12 @@ await app.register(cors, {
 await app.register(sensible);
 
 await app.register(healthRoutes);
+await app.register(authRoutes);
+await app.register(categoryRoutes);
 await app.register(userRoutes);
 await app.register(sellerRoutes);
 await app.register(adminRoutes);
+await app.register(sellerApplicationRoutes);
 
 app.setErrorHandler((error, request, reply) => {
   request.log.error(error);
