@@ -2,7 +2,7 @@
   "name": "loka-business-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "LOKA marketplace backend for buyers, sellers and platform administration.",
+  "description": "LOKA marketplace  for buyers, sellers and platform administration.",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
