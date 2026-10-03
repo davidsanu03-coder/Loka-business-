@@ -1,6 +1,5 @@
-# LOKA Business Backend
-
-Backend foundation for LOKA — a multi-seller e-commerce marketplace.
+# LOKA Nigeria  Business 
+foundation for LOKA — a multi-seller e-commerce marketplace.
 
 ## Backend domains
 - **User / Buyer** — account, profile, cart, wishlist, orders, reviews and notifications.
