@@ -61,7 +61,7 @@ create index if not exists commissions_seller_status_idx on public.commissions(s
 create or replace function public.create_order_commission(p_order_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_order public.orders%rowtype;
   v_rate numeric(5,2);
@@ -105,7 +105,7 @@ create or replace function public.prepare_order_refund(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_order public.orders%rowtype;
   v_payment public.payments%rowtype;
@@ -167,7 +167,7 @@ create or replace function public.update_payment_refund(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_refund public.payment_refunds%rowtype;
   v_order public.orders%rowtype;
@@ -273,7 +273,7 @@ grant execute on function public.update_payment_refund(uuid,public.refund_status
 create or replace function public.mark_order_delivered(p_order_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_user_id uuid := (select auth.uid());
   v_order public.orders%rowtype;
@@ -311,7 +311,7 @@ create or replace function public.seller_update_order_status(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_user_id uuid := (select auth.uid());
   v_order public.orders%rowtype;
@@ -500,7 +500,7 @@ create or replace function public.fail_checkout_payment(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_payment public.payments%rowtype;
   v_session public.checkout_sessions%rowtype;
@@ -548,7 +548,7 @@ grant execute on function public.fail_checkout_payment(uuid,jsonb) to service_ro
 create or replace function public.cancel_checkout_session(p_session_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$$
+as $
 declare
   v_user_id uuid := (select auth.uid());
   v_session public.checkout_sessions%rowtype;
