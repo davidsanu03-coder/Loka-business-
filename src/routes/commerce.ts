@@ -1,7 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../plugins/auth.js";
 import { getRequestSupabase } from "../lib/request-supabase.js";
-import { supabaseAdmin } from "../lib/supabase.js";
 import {
   addressSchema,
   cartItemSchema,
@@ -296,5 +295,4 @@ export async function commerceRoutes(app: FastifyInstance) {
     });
   }, { prefix: "/api/user" });
 
-  void supabaseAdmin;
 }
