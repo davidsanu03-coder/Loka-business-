@@ -491,3 +491,101 @@ $;
 
 revoke execute on function public.complete_checkout_payment(uuid,jsonb) from public, anon, authenticated;
 grant execute on function public.complete_checkout_payment(uuid,jsonb) to service_role;
+
+
+-- Add buyer-facing notifications to failed and cancelled checkout flows.
+create or replace function public.fail_checkout_payment(
+  p_payment_id uuid,
+  p_provider_data jsonb default '{}'::jsonb
+)
+returns jsonb
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_payment public.payments%rowtype;
+  v_session public.checkout_sessions%rowtype;
+  v_item record;
+begin
+  select * into v_payment from public.payments where id = p_payment_id for update;
+  if v_payment.id is null then raise exception 'Payment not found'; end if;
+  if v_payment.checkout_session_id is null then raise exception 'Payment is not attached to a checkout session'; end if;
+  select * into v_session from public.checkout_sessions where id = v_payment.checkout_session_id for update;
+  if v_session.id is null then raise exception 'Checkout session not found'; end if;
+  if v_payment.status = 'paid'::public.payment_status then raise exception 'Paid payment cannot be failed'; end if;
+  if v_session.status = 'paid'::public.checkout_session_status then raise exception 'Paid checkout session cannot be failed'; end if;
+
+  update public.payments set status = 'failed'::public.payment_status, metadata = p_provider_data, updated_at = now() where id = v_payment.id;
+  update public.checkout_sessions set status = 'failed'::public.checkout_session_status, updated_at = now()
+  where id = v_session.id and status = 'pending'::public.checkout_session_status;
+  update public.orders set status = 'cancelled'::public.order_status, updated_at = now()
+  where id in (select cso.order_id from public.checkout_session_orders cso where cso.checkout_session_id = v_session.id)
+    and status = 'pending'::public.order_status;
+
+  for v_item in
+    select oi.product_id, oi.quantity
+    from public.order_items oi
+    join public.checkout_session_orders cso on cso.order_id = oi.order_id
+    where cso.checkout_session_id = v_session.id
+  loop
+    update public.inventory set reserved_quantity = greatest(0, reserved_quantity - v_item.quantity)
+    where product_id = v_item.product_id;
+  end loop;
+
+  insert into public.notifications(user_id, type, title, body, data)
+  values(
+    v_session.buyer_id, 'payment.failed', 'Payment failed',
+    'Your LOKA payment was not completed. Your reserved items have been released.',
+    jsonb_build_object('checkout_session_id', v_session.id, 'amount', v_session.total)
+  );
+
+  return jsonb_build_object('checkout_session_id', v_session.id, 'status', 'failed');
+end;
+$$;
+
+revoke execute on function public.fail_checkout_payment(uuid,jsonb) from public, anon, authenticated;
+grant execute on function public.fail_checkout_payment(uuid,jsonb) to service_role;
+
+create or replace function public.cancel_checkout_session(p_session_id uuid)
+returns jsonb
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_user_id uuid := (select auth.uid());
+  v_session public.checkout_sessions%rowtype;
+  v_item record;
+begin
+  if v_user_id is null then raise exception 'Authentication required'; end if;
+  select * into v_session from public.checkout_sessions
+  where id = p_session_id and buyer_id = v_user_id for update;
+  if v_session.id is null then raise exception 'Checkout session not found'; end if;
+  if v_session.status <> 'pending'::public.checkout_session_status then raise exception 'Only pending checkout sessions can be cancelled'; end if;
+
+  update public.checkout_sessions set status = 'cancelled'::public.checkout_session_status, updated_at = now()
+  where id = p_session_id;
+  update public.orders set status = 'cancelled'::public.order_status, updated_at = now()
+  where id in (select cso.order_id from public.checkout_session_orders cso where cso.checkout_session_id = p_session_id)
+    and status = 'pending'::public.order_status;
+
+  for v_item in
+    select oi.product_id, oi.quantity
+    from public.order_items oi
+    join public.checkout_session_orders cso on cso.order_id = oi.order_id
+    where cso.checkout_session_id = p_session_id
+  loop
+    update public.inventory set reserved_quantity = greatest(0, reserved_quantity - v_item.quantity)
+    where product_id = v_item.product_id;
+  end loop;
+
+  insert into public.notifications(user_id, type, title, body, data)
+  values(
+    v_session.buyer_id, 'checkout.cancelled', 'Checkout cancelled',
+    'Your checkout was cancelled and reserved stock was released.',
+    jsonb_build_object('checkout_session_id', p_session_id)
+  );
+
+  return jsonb_build_object('id', p_session_id, 'status', 'cancelled');
+end;
+$$;
+
+revoke execute on function public.cancel_checkout_session(uuid) from public, anon;
+grant execute on function public.cancel_checkout_session(uuid) to authenticated;
