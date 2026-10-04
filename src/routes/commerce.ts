@@ -285,7 +285,7 @@ export async function commerceRoutes(app: FastifyInstance) {
       const params = request.params as { id: string };
       const { data, error } = await getRequestSupabase(request)
         .from("orders")
-        .select("*, order_items(*), payments(*)")
+        .select("*, order_items(*), payments(*), payment_refunds(*)")
         .eq("id", params.id)
         .eq("buyer_id", request.user!.id)
         .single();
