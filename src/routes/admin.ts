@@ -64,11 +64,27 @@ export async function adminRoutes(app: FastifyInstance) {
 
     admin.patch("/commissions/:id/paid", async (request) => {
       const p = request.params as { id: string };
-      const { data, error } = await getRequestSupabase(request).rpc("mark_commission_paid", {
-        p_commission_id: p.id
-      });
+      if (!supabaseAdmin) throw admin.httpErrors.internalServerError("Server service-role key is not configured");
+
+      const { data: commission, error } = await supabaseAdmin
+        .from("commissions")
+        .update({ status: "paid", paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", p.id)
+        .eq("status", "eligible")
+        .select("*")
+        .single();
+
       if (error) throw admin.httpErrors.badRequest(error.message);
-      return { data };
+
+      await supabaseAdmin.from("notifications").insert({
+        user_id: commission.seller_id,
+        type: "commission.paid",
+        title: "Commission paid",
+        body: "Your eligible commission has been marked as paid.",
+        data: { commission_id: commission.id, amount: commission.seller_amount }
+      });
+
+      return { data: commission };
     });
 
     admin.get("/analytics", async (request) => {
