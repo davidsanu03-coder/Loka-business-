@@ -12,7 +12,7 @@ do $do$
 begin
   create type public.refund_status as enum ('pending','processing','needs_attention','processed','failed');
 exception when duplicate_object then null;
-end $$;
+end $do$;
 
 alter table public.commissions
   add column if not exists status public.commission_status not null default 'pending',
