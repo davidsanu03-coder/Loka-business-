@@ -253,7 +253,7 @@ export async function commerceRoutes(app: FastifyInstance) {
       if (error || !data) throw commerce.httpErrors.notFound("Checkout session not found");
 
       if (data.status === "pending" && new Date(data.expires_at).getTime() <= Date.now()) {
-        const { error: expireError } = await client.rpc("expire_checkout_sessions");
+        const { error: expireError } = await client.rpc("expire_checkout_session", { p_session_id: params.id });
         if (!expireError) {
           const { data: refreshed } = await client
             .from("checkout_sessions")
