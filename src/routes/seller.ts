@@ -118,13 +118,10 @@ export async function sellerRoutes(app: FastifyInstance) {
       const p = request.params as { id: string };
       const body = (await import("../lib/validation.js")).sellerOrderStatusSchema.parse(request.body);
 
-      const { data, error } = await getRequestSupabase(request)
-        .from("orders")
-        .update({ status: body.status })
-        .eq("id", p.id)
-        .eq("seller_id", request.user!.id)
-        .select("*")
-        .single();
+      const { data, error } = await getRequestSupabase(request).rpc("seller_update_order_status", {
+        p_order_id: p.id,
+        p_status: body.status
+      });
 
       if (error) throw seller.httpErrors.badRequest(error.message);
       return { data };
