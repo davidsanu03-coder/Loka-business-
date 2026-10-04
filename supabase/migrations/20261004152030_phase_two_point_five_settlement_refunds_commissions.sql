@@ -61,7 +61,7 @@ create index if not exists commissions_seller_status_idx on public.commissions(s
 create or replace function public.create_order_commission(p_order_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_order public.orders%rowtype;
   v_rate numeric(5,2);
@@ -93,7 +93,7 @@ begin
     'commission_id', coalesce(v_id, (select id from public.commissions where order_id = v_order.id))
   );
 end;
-$$;
+$func$;
 
 revoke execute on function public.create_order_commission(uuid) from public, anon, authenticated;
 grant execute on function public.create_order_commission(uuid) to service_role;
@@ -105,7 +105,7 @@ create or replace function public.prepare_order_refund(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_order public.orders%rowtype;
   v_payment public.payments%rowtype;
@@ -154,7 +154,7 @@ begin
     'amount', v_refund.amount, 'currency', v_refund.currency, 'status', v_refund.status
   );
 end;
-$$;
+$func$;
 
 revoke execute on function public.prepare_order_refund(uuid,numeric,text) from public, anon, authenticated;
 grant execute on function public.prepare_order_refund(uuid,numeric,text) to service_role;
@@ -167,7 +167,7 @@ create or replace function public.update_payment_refund(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_refund public.payment_refunds%rowtype;
   v_order public.orders%rowtype;
@@ -265,7 +265,7 @@ begin
 
   return jsonb_build_object('refund_id', v_refund.id, 'status', p_status);
 end;
-$$;
+$func$;
 
 revoke execute on function public.update_payment_refund(uuid,public.refund_status,text,jsonb) from public, anon, authenticated;
 grant execute on function public.update_payment_refund(uuid,public.refund_status,text,jsonb) to service_role;
@@ -273,7 +273,7 @@ grant execute on function public.update_payment_refund(uuid,public.refund_status
 create or replace function public.mark_order_delivered(p_order_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_user_id uuid := (select auth.uid());
   v_order public.orders%rowtype;
@@ -300,7 +300,7 @@ begin
 
   return jsonb_build_object('id', p_order_id, 'status', 'delivered');
 end;
-$$;
+$func$;
 
 revoke execute on function public.mark_order_delivered(uuid) from public, anon;
 grant execute on function public.mark_order_delivered(uuid) to authenticated;
@@ -311,7 +311,7 @@ create or replace function public.seller_update_order_status(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_user_id uuid := (select auth.uid());
   v_order public.orders%rowtype;
@@ -343,7 +343,7 @@ begin
 
   return jsonb_build_object('id', p_order_id, 'status', p_status);
 end;
-$$;
+$func$;
 
 revoke execute on function public.seller_update_order_status(uuid,public.order_status) from public, anon;
 grant execute on function public.seller_update_order_status(uuid,public.order_status) to authenticated;
@@ -351,7 +351,7 @@ grant execute on function public.seller_update_order_status(uuid,public.order_st
 create or replace function public.mark_commission_paid(p_commission_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$
+as $func$
 declare
   v_commission public.commissions%rowtype;
 begin
@@ -376,7 +376,7 @@ begin
 
   return jsonb_build_object('id', p_commission_id, 'status', 'paid');
 end;
-$$;
+$func$;
 
 revoke execute on function public.mark_commission_paid(uuid) from public, anon, authenticated;
 grant execute on function public.mark_commission_paid(uuid) to service_role;
@@ -387,7 +387,7 @@ create or replace function public.complete_checkout_payment(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $$
+as $func$
 declare
   v_payment public.payments%rowtype;
   v_session public.checkout_sessions%rowtype;
@@ -487,7 +487,7 @@ begin
     'order_count', (select count(*) from public.checkout_session_orders where checkout_session_id = v_session.id)
   );
 end;
-$$;
+$func$;
 
 revoke execute on function public.complete_checkout_payment(uuid,jsonb) from public, anon, authenticated;
 grant execute on function public.complete_checkout_payment(uuid,jsonb) to service_role;
@@ -500,7 +500,7 @@ create or replace function public.fail_checkout_payment(
 )
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_payment public.payments%rowtype;
   v_session public.checkout_sessions%rowtype;
@@ -540,7 +540,7 @@ begin
 
   return jsonb_build_object('checkout_session_id', v_session.id, 'status', 'failed');
 end;
-$$;
+$func$;
 
 revoke execute on function public.fail_checkout_payment(uuid,jsonb) from public, anon, authenticated;
 grant execute on function public.fail_checkout_payment(uuid,jsonb) to service_role;
@@ -548,7 +548,7 @@ grant execute on function public.fail_checkout_payment(uuid,jsonb) to service_ro
 create or replace function public.cancel_checkout_session(p_session_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = ''
-as $
+as $func$
 declare
   v_user_id uuid := (select auth.uid());
   v_session public.checkout_sessions%rowtype;
@@ -585,7 +585,7 @@ begin
 
   return jsonb_build_object('id', p_session_id, 'status', 'cancelled');
 end;
-$$;
+$func$;
 
 revoke execute on function public.cancel_checkout_session(uuid) from public, anon;
 grant execute on function public.cancel_checkout_session(uuid) to authenticated;
