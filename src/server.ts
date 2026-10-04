@@ -29,9 +29,26 @@ await app.register(sellerApplicationRoutes);
 
 app.setErrorHandler((error, request, reply) => {
   request.log.error(error);
-  const statusCode = error.statusCode && error.statusCode >= 400 ? error.statusCode : 500;
+
+  let statusCode = 500;
+  let message = "Internal Server Error";
+
+  if (error instanceof Error) {
+    message = error.message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error &&
+    typeof error.statusCode === "number" &&
+    error.statusCode >= 400
+  ) {
+    statusCode = error.statusCode;
+  }
+
   return reply.status(statusCode).send({
-    error: statusCode === 500 ? "Internal Server Error" : error.message
+    error: statusCode === 500 ? "Internal Server Error" : message
   });
 });
 
