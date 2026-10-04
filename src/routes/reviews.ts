@@ -9,7 +9,7 @@ export async function reviewRoutes(app: FastifyInstance) {
     const p = request.params as { productId: string };
     const { data, error } = await supabase
       .from("reviews")
-      .select("id, product_id, buyer_id, order_item_id, rating, title, body, created_at, updated_at")
+      .select("id, product_id, order_item_id, rating, title, body, created_at, updated_at")
       .eq("product_id", p.productId)
       .order("created_at", { ascending: false });
 
