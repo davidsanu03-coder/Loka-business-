@@ -115,16 +115,28 @@ export async function sellerRoutes(app: FastifyInstance) {
 
     seller.get("/analytics", async (request) => {
       const client = getRequestSupabase(request);
+      const { data: sellerOrders, error: sellerOrdersError } = await client
+        .from("orders")
+        .select("id")
+        .eq("seller_id", request.user!.id);
+
+      if (sellerOrdersError) throw seller.httpErrors.internalServerError(sellerOrdersError.message);
+
+      const orderIds = (sellerOrders ?? []).map((order: any) => order.id);
       const [orders, revenue, commissions, refunds, activeProducts] = await Promise.all([
-        client.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", request.user!.id),
+        Promise.resolve({ count: sellerOrders?.length ?? 0 }),
         client.from("orders").select("total").eq("seller_id", request.user!.id).in("status", ["confirmed", "processing", "shipped", "delivered"]),
         client.from("commissions").select("commission_amount, seller_amount, refunded_amount, status").eq("seller_id", request.user!.id),
-        client.from("payment_refunds").select("amount").eq("status", "processed").in(
-          "order_id",
-          (await client.from("orders").select("id").eq("seller_id", request.user!.id)).data?.map((o: any) => o.id) ?? []
-        ),
+        orderIds.length
+          ? client.from("payment_refunds").select("amount").eq("status", "processed").in("order_id", orderIds)
+          : Promise.resolve({ data: [], error: null }),
         client.from("products").select("id", { count: "exact", head: true }).eq("seller_id", request.user!.id).eq("status", "active")
       ]);
+
+      if (revenue.error) throw seller.httpErrors.internalServerError(revenue.error.message);
+      if (commissions.error) throw seller.httpErrors.internalServerError(commissions.error.message);
+      if (refunds.error) throw seller.httpErrors.internalServerError(refunds.error.message);
+      if (activeProducts.error) throw seller.httpErrors.internalServerError(activeProducts.error.message);
 
       const sum = (rows: any[] | null | undefined, key: string) =>
         (rows ?? []).reduce((n, row) => n + Number(row[key] ?? 0), 0);
@@ -144,7 +156,7 @@ export async function sellerRoutes(app: FastifyInstance) {
     seller.get("/orders", async (request) => {
       const { data, error } = await getRequestSupabase(request)
         .from("orders")
-        .select("*, order_items(*), payments(*)")
+        .select("*, order_items(*), payments(*), payment_refunds(*)")
         .eq("seller_id", request.user!.id)
         .order("created_at", { ascending: false });
 
