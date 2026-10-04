@@ -103,6 +103,44 @@ export async function sellerRoutes(app: FastifyInstance) {
       return { data };
     });
 
+    seller.get("/commissions", async (request) => {
+      const { data, error } = await getRequestSupabase(request)
+        .from("commissions")
+        .select("*")
+        .eq("seller_id", request.user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw seller.httpErrors.internalServerError(error.message);
+      return { data };
+    });
+
+    seller.get("/analytics", async (request) => {
+      const client = getRequestSupabase(request);
+      const [orders, revenue, commissions, refunds, activeProducts] = await Promise.all([
+        client.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", request.user!.id),
+        client.from("orders").select("total").eq("seller_id", request.user!.id).in("status", ["confirmed", "processing", "shipped", "delivered"]),
+        client.from("commissions").select("commission_amount, seller_amount, refunded_amount, status").eq("seller_id", request.user!.id),
+        client.from("payment_refunds").select("amount").eq("status", "processed").in(
+          "order_id",
+          (await client.from("orders").select("id").eq("seller_id", request.user!.id)).data?.map((o: any) => o.id) ?? []
+        ),
+        client.from("products").select("id", { count: "exact", head: true }).eq("seller_id", request.user!.id).eq("status", "active")
+      ]);
+
+      const sum = (rows: any[] | null | undefined, key: string) =>
+        (rows ?? []).reduce((n, row) => n + Number(row[key] ?? 0), 0);
+
+      return {
+        data: {
+          orders: orders.count ?? 0,
+          activeProducts: activeProducts.count ?? 0,
+          grossOrderValue: sum(revenue.data, "total"),
+          commissionAccrued: sum(commissions.data, "commission_amount"),
+          sellerNet: sum(commissions.data, "seller_amount"),
+          refunded: sum(refunds.data, "amount")
+        }
+      };
+    });
+
     seller.get("/orders", async (request) => {
       const { data, error } = await getRequestSupabase(request)
         .from("orders")
