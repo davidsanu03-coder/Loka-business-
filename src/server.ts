@@ -16,9 +16,10 @@ const app = Fastify({ logger: true });
 
 app.removeContentTypeParser("application/json");
 app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
-  request.rawBody = body;
+  const rawBody = typeof body === "string" ? body : body.toString("utf8");
+  request.rawBody = rawBody;
   try {
-    done(null, JSON.parse(body));
+    done(null, JSON.parse(rawBody));
   } catch {
     done(new Error("Invalid JSON body"));
   }
