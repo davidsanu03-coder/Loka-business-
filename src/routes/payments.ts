@@ -6,6 +6,12 @@ import { getRequestSupabase } from "../lib/request-supabase.js";
 import { authenticate } from "../plugins/auth.js";
 import { paymentInitializeSchema, paymentVerifySchema } from "../lib/validation.js";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    rawBody?: string;
+  }
+}
+
 function toMinorUnits(amount: string | number) {
   const value = String(amount);
   const [whole, fraction = ""] = value.split(".");
@@ -105,7 +111,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       return reply.code(401).send({ error: "Missing payment signature" });
     }
 
-    const rawBody = (request as typeof request & { rawBody?: string }).rawBody;
+    const rawBody = request.rawBody;
     const payload = rawBody ?? JSON.stringify(request.body);
     const expected = crypto
       .createHmac("sha512", env.PAYSTACK_SECRET_KEY)
