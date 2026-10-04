@@ -96,9 +96,6 @@ export const refundSchema = z.object({
   reason: z.string().max(500).optional().nullable()
 });
 
-export const notificationReadSchema = z.object({
-  read: z.boolean().default(true)
-});
 
 export const sellerOrderStatusSchema = z.object({
   status: z.enum(["processing", "shipped", "delivered", "cancelled"])
