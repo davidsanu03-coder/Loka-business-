@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { supabase } from "../lib/supabase.js";
+import { getRequestSupabase } from "../lib/request-getRequestSupabase(request).js";
 import { authenticate } from "../plugins/auth.js";
 import { registerSchema, profileSchema } from "../lib/validation.js";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post("/api/auth/register", async (request, reply) => {
     const body = registerSchema.parse(request.body);
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await getRequestSupabase(request).auth.signUp({
       email: body.email,
       password: body.password,
       options: { data: { full_name: body.fullName, phone: body.phone } }
@@ -21,7 +21,7 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.post("/api/auth/login", async (request) => {
     const body = registerSchema.pick({ email: true, password: true }).parse(request.body);
-    const { data, error } = await supabase.auth.signInWithPassword(body);
+    const { data, error } = await getRequestSupabase(request).auth.signInWithPassword(body);
     if (error) throw app.httpErrors.unauthorized(error.message);
     return { user: data.user, session: data.session };
   });
