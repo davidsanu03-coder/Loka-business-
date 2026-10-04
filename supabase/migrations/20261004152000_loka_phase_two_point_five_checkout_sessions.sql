@@ -69,6 +69,7 @@ grant select on public.payment_allocations to authenticated;
 grant all on public.checkout_sessions, public.checkout_session_orders, public.payment_allocations to service_role;
 
 drop policy if exists payments_related_order on public.payments;
+drop policy if exists payments_related_order_or_session on public.payments;
 create policy payments_related_order_or_session on public.payments
 for select to authenticated
 using (
@@ -84,10 +85,12 @@ using (
   )
 );
 
+drop policy if exists checkout_sessions_buyer_admin on public.checkout_sessions;
 create policy checkout_sessions_buyer_admin on public.checkout_sessions
 for select to authenticated
 using (buyer_id = (select auth.uid()) or public.is_admin());
 
+drop policy if exists checkout_session_orders_participant_admin on public.checkout_session_orders;
 create policy checkout_session_orders_participant_admin on public.checkout_session_orders
 for select to authenticated
 using (
@@ -100,6 +103,7 @@ using (
   or public.is_admin()
 );
 
+drop policy if exists payment_allocations_participant_admin on public.payment_allocations;
 create policy payment_allocations_participant_admin on public.payment_allocations
 for select to authenticated
 using (
