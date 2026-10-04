@@ -90,6 +90,16 @@ export const paymentVerifySchema = z.object({
   reference: z.string().min(1).max(100)
 });
 
+export const refundSchema = z.object({
+  orderId: z.string().uuid(),
+  amount: z.number().positive().max(1000000000),
+  reason: z.string().max(500).optional().nullable()
+});
+
+export const notificationReadSchema = z.object({
+  read: z.boolean().default(true)
+});
+
 export const sellerOrderStatusSchema = z.object({
   status: z.enum(["processing", "shipped", "delivered", "cancelled"])
 });
