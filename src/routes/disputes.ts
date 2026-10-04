@@ -12,7 +12,6 @@ export async function disputeRoutes(app: FastifyInstance) {
       const { data, error } = await getRequestSupabase(request)
         .from("disputes")
         .select("*, orders(id, buyer_id, seller_id, status, total, currency)")
-        .or(`opened_by.eq.${request.user!.id},orders.buyer_id.eq.${request.user!.id},orders.seller_id.eq.${request.user!.id}`)
         .order("created_at", { ascending: false });
 
       if (error) throw dispute.httpErrors.internalServerError(error.message);
