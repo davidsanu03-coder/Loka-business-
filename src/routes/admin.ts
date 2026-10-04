@@ -1,18 +1,19 @@
 import type { FastifyInstance } from "fastify";
 import { requireRole } from "../plugins/auth.js";
-import { getRequestSupabase } from "../lib/request-getRequestSupabase(request).js";
+import { getRequestSupabase } from "../lib/request-supabase.js";
+import { supabaseAdmin } from "../lib/supabase.js";
 
 export async function adminRoutes(app: FastifyInstance) {
   app.register(async (admin) => {
     admin.addHook("preHandler", requireRole("admin"));
 
-    admin.get("/users", async () => {
+    admin.get("/users", async (request) => {
       const { data, error } = await getRequestSupabase(request).from("profiles").select("*").order("created_at", { ascending: false });
       if (error) throw admin.httpErrors.internalServerError(error.message);
       return { data };
     });
 
-    admin.get("/sellers", async () => {
+    admin.get("/sellers", async (request) => {
       const { data, error } = await getRequestSupabase(request).from("seller_profiles").select("*").order("created_at", { ascending: false });
       if (error) throw admin.httpErrors.internalServerError(error.message);
       return { data };
@@ -52,7 +53,7 @@ export async function adminRoutes(app: FastifyInstance) {
       return { data, message: "Seller suspended" };
     });
 
-    admin.get("/orders", async () => {
+    admin.get("/orders", async (request) => {
       const { data, error } = await getRequestSupabase(request).from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
       if (error) throw admin.httpErrors.internalServerError(error.message);
       return { data };
