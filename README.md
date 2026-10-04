@@ -34,6 +34,10 @@ Shared infrastructure:
 - Payment settlement confirms orders and converts reserved stock into sold stock
 - Failed/cancelled/expired checkout flows release reserved inventory
 - Seller order lifecycle: confirmed → processing → shipped → delivered
+- Commission accounting with seller-rate snapshots, eligibility on delivery and refund reversals
+- Paystack partial/full refund workflow with webhook reconciliation
+- Buyer/seller notification inbox and order/payment/refund notifications
+- Admin and seller operational analytics endpoints
 
 ## Local setup
 ```bash
