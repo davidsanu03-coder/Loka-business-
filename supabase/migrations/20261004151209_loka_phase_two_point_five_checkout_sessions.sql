@@ -128,6 +128,8 @@ using (
 
 create index if not exists checkout_sessions_buyer_status_idx
   on public.checkout_sessions(buyer_id, status, created_at desc);
+create index if not exists checkout_sessions_address_idx
+  on public.checkout_sessions(address_id);
 create index if not exists checkout_sessions_expiry_idx
   on public.checkout_sessions(status, expires_at);
 create index if not exists checkout_session_orders_order_idx
@@ -136,6 +138,8 @@ create index if not exists checkout_session_orders_seller_idx
   on public.checkout_session_orders(seller_id, created_at desc);
 create index if not exists payment_allocations_order_idx
   on public.payment_allocations(order_id, created_at desc);
+create index if not exists payments_checkout_session_idx
+  on public.payments(checkout_session_id);
 
 create or replace function public.checkout_cart(
   p_address_id uuid,
