@@ -100,3 +100,21 @@ export const refundSchema = z.object({
 export const sellerOrderStatusSchema = z.object({
   status: z.enum(["processing", "shipped", "delivered", "cancelled"])
 });
+
+
+export const reviewSchema = z.object({
+  orderItemId: z.string().uuid().optional(),
+  rating: z.number().int().min(1).max(5),
+  title: z.string().max(150).optional().nullable(),
+  body: z.string().max(3000).optional().nullable()
+});
+
+export const disputeSchema = z.object({
+  reason: z.string().min(3).max(200),
+  description: z.string().max(5000).optional().nullable()
+});
+
+export const disputeResolutionSchema = z.object({
+  status: z.enum(["open", "under_review", "resolved", "rejected"]),
+  resolution: z.string().max(5000).optional().nullable()
+});
