@@ -127,6 +127,60 @@ export async function adminRoutes(app: FastifyInstance) {
       if (error) throw admin.httpErrors.internalServerError(error.message);
       return { data };
     });
+
+    admin.get("/dashboard", async (request) => {
+      const client = getRequestSupabase(request);
+      const now = new Date();
+      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [orders, users, sellers, products, commissions, refunds, disputes] = await Promise.all([
+        client.from("orders").select("id, seller_id, status, total, created_at").gte("created_at", start).order("created_at", { ascending: true }),
+        client.from("profiles").select("id, created_at").gte("created_at", start),
+        client.from("seller_profiles").select("user_id, status, created_at").gte("created_at", start),
+        client.from("products").select("id, status, created_at").gte("created_at", start),
+        client.from("commissions").select("commission_amount, seller_amount, status, created_at").gte("created_at", start),
+        client.from("payment_refunds").select("amount, status, created_at").gte("created_at", start),
+        client.from("disputes").select("id, status, created_at").gte("created_at", start)
+      ]);
+
+      for (const result of [orders, users, sellers, products, commissions, refunds, disputes]) {
+        if (result.error) throw admin.httpErrors.internalServerError(result.error.message);
+      }
+
+      const revenueOrders = (orders.data ?? []).filter((o: any) => ["confirmed", "processing", "shipped", "delivered"].includes(o.status));
+      const grossRevenue = revenueOrders.reduce((n: number, o: any) => n + Number(o.total ?? 0), 0);
+      const processedRefunds = (refunds.data ?? []).filter((r: any) => r.status === "processed").reduce((n: number, r: any) => n + Number(r.amount ?? 0), 0);
+      const byStatus = (orders.data ?? []).reduce((acc: Record<string, number>, row: any) => {
+        acc[row.status] = (acc[row.status] ?? 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        data: {
+          periodDays: 30,
+          users: users.data?.length ?? 0,
+          sellers: {
+            new: sellers.data?.length ?? 0,
+            approved: sellers.data?.filter((s: any) => s.status === "approved").length ?? 0
+          },
+          products: products.data?.length ?? 0,
+          orders: { total: orders.data?.length ?? 0, byStatus },
+          revenue: { gross: grossRevenue, processedRefunds, net: grossRevenue - processedRefunds },
+          commissions: {
+            accrued: (commissions.data ?? []).reduce((n: number, c: any) => n + Number(c.commission_amount ?? 0), 0),
+            sellerNet: (commissions.data ?? []).reduce((n: number, c: any) => n + Number(c.seller_amount ?? 0), 0),
+            pending: (commissions.data ?? []).filter((c: any) => c.status === "pending").length,
+            eligible: (commissions.data ?? []).filter((c: any) => c.status === "eligible").length
+          },
+          disputes: {
+            total: disputes.data?.length ?? 0,
+            open: disputes.data?.filter((d: any) => d.status === "open" || d.status === "under_review").length ?? 0,
+            resolved: disputes.data?.filter((d: any) => d.status === "resolved").length ?? 0
+          }
+        }
+      };
+    });
+
   }, { prefix: "/api/admin" });
 }
 
