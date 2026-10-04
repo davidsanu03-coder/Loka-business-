@@ -47,6 +47,14 @@ async function paystackRequest(path: string, init?: RequestInit) {
 async function recordSuccessfulPayment(payment: any, verified: any) {
   if (!supabaseAdmin) throw new Error("Server service-role key is not configured");
 
+  const { data: order, error: orderLookupError } = await supabaseAdmin
+    .from("orders")
+    .select("id, buyer_id")
+    .eq("id", payment.order_id)
+    .single();
+
+  if (orderLookupError || !order) throw new Error(orderLookupError?.message ?? "Order not found");
+
   const paidAt = verified.paidAt ?? verified.paid_at ?? new Date().toISOString();
 
   const { error: paymentError } = await supabaseAdmin
@@ -65,7 +73,7 @@ async function recordSuccessfulPayment(payment: any, verified: any) {
     .upsert({
       payment_id: payment.id,
       order_id: payment.order_id,
-      user_id: payment.user_id,
+      user_id: order.buyer_id,
       type: "payment",
       amount: payment.amount,
       currency: payment.currency,
@@ -247,16 +255,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         .maybeSingle();
 
       if (paymentError) throw payments.httpErrors.internalServerError(paymentError.message);
-      if (!payment || payment.user_id && payment.user_id !== request.user!.id) {
-        const { data: order } = await getRequestSupabase(request)
-          .from("orders")
-          .select("id")
-          .eq("id", payment?.order_id ?? "")
-          .eq("buyer_id", request.user!.id)
-          .maybeSingle();
-
-        if (!order) throw payments.httpErrors.notFound("Payment not found");
-      }
+      if (!payment) throw payments.httpErrors.notFound("Payment not found");
 
       const { data: order } = await getRequestSupabase(request)
         .from("orders")
