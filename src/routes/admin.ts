@@ -53,6 +53,59 @@ export async function adminRoutes(app: FastifyInstance) {
       return { data, message: "Seller suspended" };
     });
 
+    admin.get("/commissions", async (request) => {
+      const { data, error } = await getRequestSupabase(request)
+        .from("commissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw admin.httpErrors.internalServerError(error.message);
+      return { data };
+    });
+
+    admin.patch("/commissions/:id/paid", async (request) => {
+      const p = request.params as { id: string };
+      const { data, error } = await getRequestSupabase(request).rpc("mark_commission_paid", {
+        p_commission_id: p.id
+      });
+      if (error) throw admin.httpErrors.badRequest(error.message);
+      return { data };
+    });
+
+    admin.get("/analytics", async (request) => {
+      const client = getRequestSupabase(request);
+      const [
+        users,
+        sellers,
+        orders,
+        revenue,
+        commissions,
+        refunds,
+        pendingOrders
+      ] = await Promise.all([
+        client.from("profiles").select("id", { count: "exact", head: true }),
+        client.from("seller_profiles").select("user_id", { count: "exact", head: true }).eq("status", "approved"),
+        client.from("orders").select("id", { count: "exact", head: true }),
+        client.from("orders").select("total").in("status", ["confirmed", "processing", "shipped", "delivered"]),
+        client.from("commissions").select("commission_amount"),
+        client.from("payment_refunds").select("amount").eq("status", "processed"),
+        client.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed", "processing", "shipped"])
+      ]);
+
+      const sum = (rows: any[] | null | undefined) => (rows ?? []).reduce((n, row) => n + Number(row.total ?? row.commission_amount ?? row.amount ?? 0), 0);
+
+      return {
+        data: {
+          users: users.count ?? 0,
+          approvedSellers: sellers.count ?? 0,
+          orders: orders.count ?? 0,
+          pendingOrActiveOrders: pendingOrders.count ?? 0,
+          grossOrderValue: sum(revenue.data),
+          commissions: sum(commissions.data),
+          processedRefunds: sum(refunds.data)
+        }
+      };
+    });
+
     admin.get("/orders", async (request) => {
       const { data, error } = await getRequestSupabase(request).from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
       if (error) throw admin.httpErrors.internalServerError(error.message);
