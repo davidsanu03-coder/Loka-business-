@@ -11,6 +11,8 @@ create type public.order_status as enum ('pending', 'confirmed', 'processing', '
 create type public.payment_status as enum ('pending', 'paid', 'failed', 'refunded', 'partially_refunded');
 create type public.checkout_session_status as enum ('pending', 'paid', 'failed', 'cancelled', 'expired');
 create type public.dispute_status as enum ('open', 'under_review', 'resolved', 'rejected');
+create type public.commission_status as enum ('pending','eligible','paid','reversed');
+create type public.refund_status as enum ('pending','processing','needs_attention','processed','failed');
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -284,8 +286,34 @@ create table public.commissions (
   commission_rate numeric(5,2) not null check (commission_rate >= 0 and commission_rate <= 100),
   commission_amount numeric(14,2) not null check (commission_amount >= 0),
   seller_amount numeric(14,2) not null check (seller_amount >= 0),
-  created_at timestamptz not null default now()
+  status public.commission_status not null default 'pending',
+  refunded_amount numeric(14,2) not null default 0 check (refunded_amount >= 0),
+  eligible_at timestamptz,
+  paid_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+create unique index commissions_order_unique on public.commissions(order_id);
+create index commissions_seller_status_idx on public.commissions(seller_id, status, created_at desc);
+
+create table public.payment_refunds (
+  id uuid primary key default gen_random_uuid(),
+  payment_id uuid not null references public.payments(id) on delete restrict,
+  order_id uuid not null references public.orders(id) on delete restrict,
+  amount numeric(14,2) not null check (amount > 0),
+  currency text not null default 'NGN',
+  status public.refund_status not null default 'pending',
+  provider_refund_id text unique,
+  reason text,
+  metadata jsonb not null default '{}'::jsonb,
+  processed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index payment_refunds_payment_idx on public.payment_refunds(payment_id, created_at desc);
+create index payment_refunds_order_idx on public.payment_refunds(order_id, created_at desc);
 
 create table public.disputes (
   id uuid primary key default gen_random_uuid(),
@@ -363,6 +391,7 @@ alter table public.payments enable row level security;
 alter table public.transactions enable row level security;
 alter table public.reviews enable row level security;
 alter table public.notifications enable row level security;
+alter table public.payment_refunds enable row level security;
 alter table public.checkout_sessions enable row level security;
 alter table public.checkout_session_orders enable row level security;
 alter table public.payment_allocations enable row level security;
@@ -560,6 +589,17 @@ create policy commissions_seller_admin on public.commissions
 for select to authenticated
 using (seller_id = (select auth.uid()) or public.is_admin());
 
+create policy payment_refunds_participant_admin on public.payment_refunds
+for select to authenticated
+using (
+  exists (
+    select 1 from public.orders o
+    where o.id = order_id
+      and (o.buyer_id = (select auth.uid()) or o.seller_id = (select auth.uid()) or public.is_admin())
+  )
+  or public.is_admin()
+);
+
 create policy disputes_participant_admin on public.disputes
 for all to authenticated
 using (
@@ -579,10 +619,10 @@ create index disputes_order_idx on public.disputes(order_id, created_at desc);
 
 grant select on public.checkout_sessions to authenticated;
 grant select on public.checkout_session_orders to authenticated;
-grant select on public.payment_allocations to authenticated;
-grant all on public.checkout_sessions, public.checkout_session_orders, public.payment_allocations to service_role;
+grant select on public.payment_allocations, public.payment_refunds to authenticated;
+grant all on public.checkout_sessions, public.checkout_session_orders, public.payment_allocations, public.payment_refunds to service_role;
 
  
--- Phase 2 checkout functions are maintained in
--- supabase/migrations/20261004150200_loka_phase_two_commerce.sql.
--- Keep the migration as the deployable source of truth.
+-- Checkout, settlement, refunds and commission functions are maintained in
+-- the Phase 2 and Phase 2.5 migration files.
+-- Keep migration files as the deployable source of truth.
