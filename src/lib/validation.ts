@@ -80,7 +80,10 @@ export const checkoutSchema = z.object({
 });
 
 export const paymentInitializeSchema = z.object({
-  orderId: z.string().uuid()
+  checkoutSessionId: z.string().uuid().optional(),
+  orderId: z.string().uuid().optional()
+}).refine(value => Boolean(value.checkoutSessionId || value.orderId), {
+  message: "checkoutSessionId or orderId is required"
 });
 
 export const paymentVerifySchema = z.object({
