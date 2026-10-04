@@ -3,8 +3,8 @@ import type { FastifyInstance } from "fastify";
 import { env } from "../config.js";
 import { supabaseAdmin } from "../lib/supabase.js";
 import { getRequestSupabase } from "../lib/request-supabase.js";
-import { authenticate } from "../plugins/auth.js";
-import { paymentInitializeSchema, paymentVerifySchema } from "../lib/validation.js";
+import { authenticate, requireRole } from "../plugins/auth.js";
+import { paymentInitializeSchema, paymentVerifySchema, refundSchema } from "../lib/validation.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -239,6 +239,74 @@ export async function paymentRoutes(app: FastifyInstance) {
       }
     }
 
+    if (
+      typeof event.event === "string" &&
+      event.event.startsWith("refund.") &&
+      event.data &&
+      supabaseAdmin
+    ) {
+      const transactionReference =
+        typeof event.data.transaction === "string"
+          ? event.data.transaction
+          : event.data.transaction?.reference;
+
+      if (transactionReference) {
+        const { data: payment } = await supabaseAdmin
+          .from("payments")
+          .select("id, provider_reference")
+          .eq("provider", "paystack")
+          .eq("provider_reference", String(transactionReference))
+          .maybeSingle();
+
+        if (payment) {
+          const rawStatus = String(event.data.status ?? "").toLowerCase();
+          const statusMap: Record<string, string> = {
+            pending: "pending",
+            processing: "processing",
+            "needs-attention": "needs_attention",
+            "needs_attention": "needs_attention",
+            processed: "processed",
+            failed: "failed"
+          };
+          const mappedStatus = statusMap[rawStatus];
+
+          if (mappedStatus) {
+            let refundId: string | null = null;
+
+            if (event.data.id != null) {
+              const { data: existingRefund } = await supabaseAdmin
+                .from("payment_refunds")
+                .select("id")
+                .eq("provider_refund_id", String(event.data.id))
+                .maybeSingle();
+              refundId = existingRefund?.id ?? null;
+            }
+
+            if (!refundId) {
+              const { data: pendingRefund } = await supabaseAdmin
+                .from("payment_refunds")
+                .select("id")
+                .eq("payment_id", payment.id)
+                .in("status", ["pending", "processing", "needs_attention"])
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+              refundId = pendingRefund?.id ?? null;
+            }
+
+            if (refundId) {
+              await supabaseAdmin.rpc("update_payment_refund", {
+                p_refund_id: refundId,
+                p_status: mappedStatus,
+                p_provider_refund_id: event.data.id != null ? String(event.data.id) : null,
+                p_metadata: event.data
+              });
+            }
+          }
+        }
+      }
+    }
+
     return reply.code(200).send({ received: true });
   });
 
@@ -459,5 +527,93 @@ export async function paymentRoutes(app: FastifyInstance) {
         providerStatus: transaction.status
       };
     });
+    payments.post("/refunds", { preHandler: requireRole("admin") }, async (request) => {
+      const body = refundSchema.parse(request.body);
+
+      if (!supabaseAdmin) {
+        throw payments.httpErrors.internalServerError("Server service-role key is not configured");
+      }
+
+      if (!env.PAYSTACK_SECRET_KEY) {
+        throw payments.httpErrors.serviceUnavailable("Payment provider is not configured");
+      }
+
+      const { data: prepared, error: prepareError } = await supabaseAdmin.rpc("prepare_order_refund", {
+        p_order_id: body.orderId,
+        p_amount: body.amount,
+        p_reason: body.reason ?? null
+      });
+
+      if (prepareError) throw payments.httpErrors.badRequest(prepareError.message);
+
+      const refund = prepared as {
+        refund_id: string;
+        payment_id: string;
+        order_id: string;
+        amount: number;
+        currency: string;
+        status: string;
+      };
+
+      const { data: payment, error: paymentError } = await supabaseAdmin
+        .from("payments")
+        .select("id, provider_reference, amount, currency")
+        .eq("id", refund.payment_id)
+        .single();
+
+      if (paymentError || !payment) {
+        throw payments.httpErrors.internalServerError(paymentError?.message ?? "Payment not found");
+      }
+
+      try {
+        const provider = await paystackRequest("/refund", {
+          method: "POST",
+          body: JSON.stringify({
+            transaction: payment.provider_reference,
+            amount: toMinorUnits(String(refund.amount)),
+            currency: refund.currency,
+            customer_note: body.reason ?? "LOKA order refund",
+            merchant_note: "LOKA refund for order " + refund.order_id
+          })
+        });
+
+        const providerRefund = provider.data;
+        const rawStatus = String(providerRefund?.status ?? "pending").toLowerCase();
+        const statusMap: Record<string, "pending" | "processing" | "needs_attention" | "processed" | "failed"> = {
+          pending: "pending",
+          processing: "processing",
+          "needs-attention": "needs_attention",
+          "needs_attention": "needs_attention",
+          processed: "processed",
+          failed: "failed"
+        };
+        const mappedStatus = statusMap[rawStatus] ?? "pending";
+
+        const { data: updated, error: updateError } = await supabaseAdmin.rpc("update_payment_refund", {
+          p_refund_id: refund.refund_id,
+          p_status: mappedStatus,
+          p_provider_refund_id: providerRefund?.id != null ? String(providerRefund.id) : null,
+          p_metadata: providerRefund ?? {}
+        });
+
+        if (updateError) throw new Error(updateError.message);
+
+        return {
+          data: updated,
+          provider: providerRefund
+        };
+      } catch (error) {
+        await supabaseAdmin.rpc("update_payment_refund", {
+          p_refund_id: refund.refund_id,
+          p_status: "failed",
+          p_metadata: { error: error instanceof Error ? error.message : String(error) }
+        });
+
+        throw payments.httpErrors.badRequest(
+          error instanceof Error ? error.message : "Refund request failed"
+        );
+      }
+    });
+
   }, { prefix: "/api/payments" });
 }
