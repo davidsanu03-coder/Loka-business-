@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { requireRole } from "../plugins/auth.js";
-import { getRequestSupabase } from "../lib/request-getRequestSupabase(request).js";
+import { getRequestSupabase } from "../lib/request-supabase.js";
 import { storeSchema, productSchema, inventorySchema } from "../lib/validation.js";
 
 export async function sellerRoutes(app: FastifyInstance) {
