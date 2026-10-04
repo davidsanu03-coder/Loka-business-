@@ -187,7 +187,11 @@ export async function sellerRoutes(app: FastifyInstance) {
         client.from("inventory").select("product_id, quantity, reserved_quantity, products!inner(id, name, seller_id)").eq("products.seller_id", request.user!.id),
         client.from("orders").select("id, status, total, created_at").eq("seller_id", request.user!.id).gte("created_at", start).order("created_at", { ascending: true }),
         client.from("commissions").select("commission_amount, seller_amount, status, created_at").eq("seller_id", request.user!.id).gte("created_at", start),
-        client.from("payment_refunds").select("amount, status, created_at").in("order_id", (await client.from("orders").select("id").eq("seller_id", request.user!.id)).data?.map((x: any) => x.id) ?? []).gte("created_at", start)
+        Promise.resolve({ data: [], error: null }).then(async () => {
+          const sellerOrderIds = (await client.from("orders").select("id").eq("seller_id", request.user!.id)).data?.map((x: any) => x.id) ?? [];
+          if (!sellerOrderIds.length) return { data: [], error: null };
+          return client.from("payment_refunds").select("amount, status, created_at").in("order_id", sellerOrderIds).gte("created_at", start);
+        })
       ]);
 
       for (const result of [products, inventory, orders, commissions, refunds]) {
