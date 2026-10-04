@@ -11,6 +11,8 @@ import { authRoutes } from "./routes/auth.js";
 import { categoryRoutes } from "./routes/categories.js";
 import { commerceRoutes } from "./routes/commerce.js";
 import { paymentRoutes } from "./routes/payments.js";
+import { reviewRoutes } from "./routes/reviews.js";
+import { disputeRoutes } from "./routes/disputes.js";
 
 const app = Fastify({ logger: true });
 
@@ -38,6 +40,8 @@ await app.register(categoryRoutes);
 await app.register(userRoutes);
 await app.register(commerceRoutes);
 await app.register(paymentRoutes);
+await app.register(reviewRoutes);
+await app.register(disputeRoutes);
 await app.register(sellerRoutes);
 await app.register(adminRoutes);
 await app.register(sellerApplicationRoutes);
