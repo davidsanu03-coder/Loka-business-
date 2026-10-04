@@ -287,6 +287,7 @@ export async function paymentRoutes(app: FastifyInstance) {
                 .from("payment_refunds")
                 .select("id")
                 .eq("payment_id", payment.id)
+                .eq("amount", Number(event.data.amount ?? 0) / 100)
                 .in("status", ["pending", "processing", "needs_attention"])
                 .order("created_at", { ascending: false })
                 .limit(1)
