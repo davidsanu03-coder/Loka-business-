@@ -176,5 +176,56 @@ export async function sellerRoutes(app: FastifyInstance) {
       if (error) throw seller.httpErrors.badRequest(error.message);
       return { data };
     });
+
+    seller.get("/dashboard", async (request) => {
+      const client = getRequestSupabase(request);
+      const now = new Date();
+      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [products, inventory, orders, commissions, refunds] = await Promise.all([
+        client.from("products").select("id, status", { count: "exact" }).eq("seller_id", request.user!.id),
+        client.from("inventory").select("product_id, quantity, reserved_quantity, products!inner(id, name, seller_id)").eq("products.seller_id", request.user!.id),
+        client.from("orders").select("id, status, total, created_at").eq("seller_id", request.user!.id).gte("created_at", start).order("created_at", { ascending: true }),
+        client.from("commissions").select("commission_amount, seller_amount, status, created_at").eq("seller_id", request.user!.id).gte("created_at", start),
+        client.from("payment_refunds").select("amount, status, created_at").in("order_id", (await client.from("orders").select("id").eq("seller_id", request.user!.id)).data?.map((x: any) => x.id) ?? []).gte("created_at", start)
+      ]);
+
+      for (const result of [products, inventory, orders, commissions, refunds]) {
+        if (result.error) throw seller.httpErrors.internalServerError(result.error.message);
+      }
+
+      const orderRows = orders.data ?? [];
+      const revenue = orderRows.filter((o: any) => ["confirmed", "processing", "shipped", "delivered"].includes(o.status))
+        .reduce((sum: number, o: any) => sum + Number(o.total ?? 0), 0);
+      const lowStock = (inventory.data ?? []).filter((row: any) => Number(row.quantity ?? 0) - Number(row.reserved_quantity ?? 0) <= 5);
+      const byStatus = orderRows.reduce((acc: Record<string, number>, row: any) => {
+        acc[row.status] = (acc[row.status] ?? 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        data: {
+          periodDays: 30,
+          products: {
+            total: products.count ?? 0,
+            active: (products.data ?? []).filter((p: any) => p.status === "active").length,
+            lowStock: lowStock.length
+          },
+          orders: { total: orderRows.length, byStatus },
+          revenue: { gross: revenue, refunded: (refunds.data ?? []).filter((r: any) => r.status === "processed").reduce((n: number, r: any) => n + Number(r.amount ?? 0), 0) },
+          commissions: {
+            accrued: (commissions.data ?? []).reduce((n: number, c: any) => n + Number(c.commission_amount ?? 0), 0),
+            sellerNet: (commissions.data ?? []).reduce((n: number, c: any) => n + Number(c.seller_amount ?? 0), 0),
+            eligible: (commissions.data ?? []).filter((c: any) => c.status === "eligible").length
+          },
+          lowStockProducts: lowStock.map((row: any) => ({
+            productId: row.product_id,
+            name: Array.isArray(row.products) ? row.products[0]?.name : row.products?.name,
+            available: Number(row.quantity ?? 0) - Number(row.reserved_quantity ?? 0)
+          }))
+        }
+      };
+    });
+
   }, { prefix: "/api/seller" });
 }
