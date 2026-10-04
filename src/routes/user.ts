@@ -13,7 +13,7 @@ export async function userRoutes(app: FastifyInstance) {
     });
 
     user.get("/orders", async (request) => {
-      const { data, error } = await getRequestSupabase(request).from("orders").select("*, order_items(*), payments(*)").eq("buyer_id", request.user!.id).order("created_at", { ascending: false });
+      const { data, error } = await getRequestSupabase(request).from("orders").select("*, order_items(*), payments(*), payment_refunds(*)").eq("buyer_id", request.user!.id).order("created_at", { ascending: false });
       if (error) throw user.httpErrors.internalServerError(error.message);
       return { data };
     });
