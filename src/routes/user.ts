@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../plugins/auth.js";
-import { supabase } from "../lib/supabase.js";
+import { getRequestSupabase } from "../lib/request-getRequestSupabase(request).js";
 
 export async function userRoutes(app: FastifyInstance) {
   app.register(async (user) => {
