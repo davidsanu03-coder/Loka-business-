@@ -102,5 +102,32 @@ export async function sellerRoutes(app: FastifyInstance) {
       if (error) throw seller.httpErrors.notFound("Inventory not found");
       return { data };
     });
+
+    seller.get("/orders", async (request) => {
+      const { data, error } = await getRequestSupabase(request)
+        .from("orders")
+        .select("*, order_items(*), payments(*)")
+        .eq("seller_id", request.user!.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw seller.httpErrors.internalServerError(error.message);
+      return { data };
+    });
+
+    seller.patch("/orders/:id/status", async (request) => {
+      const p = request.params as { id: string };
+      const body = (await import("../lib/validation.js")).sellerOrderStatusSchema.parse(request.body);
+
+      const { data, error } = await getRequestSupabase(request)
+        .from("orders")
+        .update({ status: body.status })
+        .eq("id", p.id)
+        .eq("seller_id", request.user!.id)
+        .select("*")
+        .single();
+
+      if (error) throw seller.httpErrors.badRequest(error.message);
+      return { data };
+    });
   }, { prefix: "/api/seller" });
 }
