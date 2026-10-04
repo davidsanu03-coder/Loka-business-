@@ -234,6 +234,9 @@ create table public.payment_allocations (
 create index payment_allocations_order_idx
   on public.payment_allocations(order_id, created_at desc);
 create index payments_checkout_session_idx on public.payments(checkout_session_id);
+create unique index payments_pending_session_unique
+  on public.payments(checkout_session_id)
+  where checkout_session_id is not null and status = 'pending';
 
 create table public.transactions (
   id uuid primary key default gen_random_uuid(),
