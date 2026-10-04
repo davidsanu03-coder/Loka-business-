@@ -2,7 +2,7 @@
 
 do $$
 begin
-  create type public.commission_status as enum ('pending','eligible','paid','reversed');
+  create type public.commission_status as enum ('pending','eligible','paid','reversed','partially_reversed');
 exception when duplicate_object then null;
 end $$;
 
@@ -218,7 +218,11 @@ begin
       set refunded_amount = least(v_order.total, refunded_amount + v_refund.amount),
           commission_amount = greatest(0, commission_amount - v_commission_reversal),
           seller_amount = greatest(0, seller_amount - v_seller_reversal),
-          status = case when v_total_refunded >= v_order.total then 'reversed'::public.commission_status else status end,
+          status = case
+            when v_total_refunded >= v_order.total then 'reversed'::public.commission_status
+            when v_total_refunded > 0 then 'partially_reversed'::public.commission_status
+            else status
+          end,
           updated_at = now()
       where id = v_commission.id;
     end if;
