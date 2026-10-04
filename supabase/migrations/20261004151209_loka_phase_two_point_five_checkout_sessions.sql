@@ -140,6 +140,9 @@ create index if not exists payment_allocations_order_idx
   on public.payment_allocations(order_id, created_at desc);
 create index if not exists payments_checkout_session_idx
   on public.payments(checkout_session_id);
+create unique index if not exists payments_pending_session_unique
+  on public.payments(checkout_session_id)
+  where checkout_session_id is not null and status = 'pending';
 
 create or replace function public.checkout_cart(
   p_address_id uuid,
@@ -655,8 +658,6 @@ as $$
 declare
   v_user_id uuid := (select auth.uid());
   v_order public.orders%rowtype;
-  v_item record;
-  v_allowed boolean := false;
 begin
   if v_user_id is null then raise exception 'Authentication required'; end if;
 
@@ -667,30 +668,17 @@ begin
 
   if v_order.id is null then raise exception 'Order not found'; end if;
 
-  v_allowed := (
-    (v_order.status = 'pending'::public.order_status and p_status in ('processing'::public.order_status, 'cancelled'::public.order_status))
-    or (v_order.status = 'confirmed'::public.order_status and p_status = 'processing'::public.order_status)
+  if not (
+    (v_order.status = 'confirmed'::public.order_status and p_status = 'processing'::public.order_status)
     or (v_order.status = 'processing'::public.order_status and p_status = 'shipped'::public.order_status)
     or (v_order.status = 'shipped'::public.order_status and p_status = 'delivered'::public.order_status)
-  );
-
-  if not v_allowed then
+  ) then
     raise exception 'Invalid order status transition from % to %', v_order.status, p_status;
   end if;
 
-  if p_status = 'cancelled'::public.order_status then
-    update public.orders set status = p_status, updated_at = now() where id = p_order_id;
-
-    for v_item in
-      select product_id, quantity from public.order_items where order_id = p_order_id
-    loop
-      update public.inventory
-      set reserved_quantity = greatest(0, reserved_quantity - v_item.quantity)
-      where product_id = v_item.product_id;
-    end loop;
-  else
-    update public.orders set status = p_status, updated_at = now() where id = p_order_id;
-  end if;
+  update public.orders
+  set status = p_status, updated_at = now()
+  where id = p_order_id;
 
   return jsonb_build_object('id', p_order_id, 'status', p_status);
 end;
