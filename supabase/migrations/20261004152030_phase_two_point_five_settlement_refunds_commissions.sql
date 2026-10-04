@@ -1,14 +1,14 @@
 -- LOKA Phase 2.5 settlement hardening, refunds, commissions and notifications.
 
-do $$
+do $do$
 begin
   create type public.commission_status as enum ('pending','eligible','paid','reversed','partially_reversed');
 exception when duplicate_object then null;
-end $;
+end $do$;
 
 alter type public.commission_status add value if not exists 'partially_reversed';
 
-do $
+do $do$
 begin
   create type public.refund_status as enum ('pending','processing','needs_attention','processed','failed');
 exception when duplicate_object then null;
