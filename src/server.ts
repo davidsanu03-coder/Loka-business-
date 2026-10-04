@@ -9,8 +9,20 @@ import { sellerRoutes } from "./routes/seller.js";
 import { adminRoutes, sellerApplicationRoutes } from "./routes/admin.js";
 import { authRoutes } from "./routes/auth.js";
 import { categoryRoutes } from "./routes/categories.js";
+import { commerceRoutes } from "./routes/commerce.js";
+import { paymentRoutes } from "./routes/payments.js";
 
 const app = Fastify({ logger: true });
+
+app.removeContentTypeParser("application/json");
+app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+  request.rawBody = body;
+  try {
+    done(null, JSON.parse(body));
+  } catch {
+    done(new Error("Invalid JSON body"));
+  }
+});
 
 await app.register(helmet);
 await app.register(cors, {
@@ -23,6 +35,8 @@ await app.register(healthRoutes);
 await app.register(authRoutes);
 await app.register(categoryRoutes);
 await app.register(userRoutes);
+await app.register(commerceRoutes);
+await app.register(paymentRoutes);
 await app.register(sellerRoutes);
 await app.register(adminRoutes);
 await app.register(sellerApplicationRoutes);
