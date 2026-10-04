@@ -1,12 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../plugins/auth.js";
 import { getRequestSupabase } from "../lib/request-supabase.js";
+import { supabase } from "../lib/supabase.js";
 import { reviewSchema } from "../lib/validation.js";
 
 export async function reviewRoutes(app: FastifyInstance) {
   app.get("/api/products/:productId/reviews", async (request) => {
     const p = request.params as { productId: string };
-    const { data, error } = await getRequestSupabase(request)
+    const { data, error } = await supabase
       .from("reviews")
       .select("id, product_id, buyer_id, order_item_id, rating, title, body, created_at, updated_at")
       .eq("product_id", p.productId)
