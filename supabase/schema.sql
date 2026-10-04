@@ -11,7 +11,7 @@ create type public.order_status as enum ('pending', 'confirmed', 'processing', '
 create type public.payment_status as enum ('pending', 'paid', 'failed', 'refunded', 'partially_refunded');
 create type public.checkout_session_status as enum ('pending', 'paid', 'failed', 'cancelled', 'expired');
 create type public.dispute_status as enum ('open', 'under_review', 'resolved', 'rejected');
-create type public.commission_status as enum ('pending','eligible','paid','reversed');
+create type public.commission_status as enum ('pending','eligible','paid','reversed','partially_reversed');
 create type public.refund_status as enum ('pending','processing','needs_attention','processed','failed');
 
 create table public.profiles (
