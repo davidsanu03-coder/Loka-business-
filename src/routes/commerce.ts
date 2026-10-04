@@ -260,39 +260,6 @@ export async function commerceRoutes(app: FastifyInstance) {
       return { data };
     });
 
-    commerce.get("/wishlist", async (request) => {
-      const { data, error } = await getRequestSupabase(request)
-        .from("wishlists")
-        .select("*, products(*)")
-        .eq("user_id", request.user!.id);
-
-      if (error) throw commerce.httpErrors.internalServerError(error.message);
-      return { data };
-    });
-
-    commerce.post("/wishlist/:productId", async (request, reply) => {
-      const params = request.params as { productId: string };
-      const { data, error } = await getRequestSupabase(request)
-        .from("wishlists")
-        .insert({ user_id: request.user!.id, product_id: params.productId })
-        .select("*")
-        .single();
-
-      if (error) throw commerce.httpErrors.badRequest(error.message);
-      return reply.code(201).send({ data });
-    });
-
-    commerce.delete("/wishlist/:productId", async (request) => {
-      const params = request.params as { productId: string };
-      const { error } = await getRequestSupabase(request)
-        .from("wishlists")
-        .delete()
-        .eq("user_id", request.user!.id)
-        .eq("product_id", params.productId);
-
-      if (error) throw commerce.httpErrors.badRequest(error.message);
-      return { message: "Wishlist item removed" };
-    });
   }, { prefix: "/api/user" });
 
 }
