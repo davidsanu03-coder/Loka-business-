@@ -342,5 +342,146 @@ $$;
 revoke execute on function public.seller_update_order_status(uuid,public.order_status) from public, anon;
 grant execute on function public.seller_update_order_status(uuid,public.order_status) to authenticated;
 
+create or replace function public.mark_commission_paid(p_commission_id uuid)
+returns jsonb
+language plpgsql security definer set search_path = ''
+as $
+declare
+  v_commission public.commissions%rowtype;
+begin
+  if not public.is_admin() then raise exception 'Admin access required'; end if;
+
+  select * into v_commission from public.commissions where id = p_commission_id for update;
+  if v_commission.id is null then raise exception 'Commission not found'; end if;
+  if v_commission.status <> 'eligible'::public.commission_status then
+    raise exception 'Only eligible commissions can be marked paid';
+  end if;
+
+  update public.commissions
+  set status = 'paid'::public.commission_status, paid_at = now(), updated_at = now()
+  where id = p_commission_id;
+
+  insert into public.notifications(user_id, type, title, body, data)
+  values(
+    v_commission.seller_id, 'commission.paid', 'Commission paid',
+    'Your eligible commission has been marked as paid.',
+    jsonb_build_object('commission_id', p_commission_id, 'amount', v_commission.seller_amount)
+  );
+
+  return jsonb_build_object('id', p_commission_id, 'status', 'paid');
+end;
+$;
+
 revoke execute on function public.mark_commission_paid(uuid) from public, anon, authenticated;
 grant execute on function public.mark_commission_paid(uuid) to service_role;
+
+create or replace function public.complete_checkout_payment(
+  p_payment_id uuid,
+  p_provider_data jsonb default '{}'::jsonb
+)
+returns jsonb
+language plpgsql security definer set search_path = ''
+as $
+declare
+  v_payment public.payments%rowtype;
+  v_session public.checkout_sessions%rowtype;
+  v_allocation record;
+  v_item record;
+  v_affected integer;
+begin
+  select * into v_payment from public.payments where id = p_payment_id for update;
+  if v_payment.id is null then raise exception 'Payment not found'; end if;
+  if v_payment.checkout_session_id is null then raise exception 'Payment is not attached to a checkout session'; end if;
+
+  select * into v_session from public.checkout_sessions where id = v_payment.checkout_session_id for update;
+  if v_session.id is null then raise exception 'Checkout session not found'; end if;
+
+  if v_payment.status = 'paid'::public.payment_status
+     and v_session.status = 'paid'::public.checkout_session_status then
+    return jsonb_build_object('checkout_session_id', v_session.id, 'status', 'paid');
+  end if;
+
+  if v_session.status <> 'pending'::public.checkout_session_status then
+    raise exception 'Checkout session is not payable';
+  end if;
+
+  if v_payment.amount <> v_session.total or v_payment.currency <> v_session.currency then
+    raise exception 'Payment amount or currency does not match checkout session';
+  end if;
+
+  update public.payments
+  set status = 'paid'::public.payment_status,
+      paid_at = coalesce((p_provider_data->>'paid_at')::timestamptz, now()),
+      metadata = p_provider_data, updated_at = now()
+  where id = v_payment.id;
+
+  for v_allocation in
+    select cso.order_id, cso.amount
+    from public.checkout_session_orders cso
+    where cso.checkout_session_id = v_session.id
+    order by cso.order_id
+  loop
+    insert into public.payment_allocations(payment_id, order_id, amount)
+    values(v_payment.id, v_allocation.order_id, v_allocation.amount)
+    on conflict(payment_id, order_id) do update set amount = excluded.amount;
+
+    update public.orders
+    set status = 'confirmed'::public.order_status, updated_at = now()
+    where id = v_allocation.order_id and status = 'pending'::public.order_status;
+
+    perform public.create_order_commission(v_allocation.order_id);
+
+    insert into public.notifications(user_id, type, title, body, data)
+    select o.buyer_id, 'payment.success', 'Payment successful',
+           'Your LOKA payment was confirmed.',
+           jsonb_build_object('checkout_session_id', v_session.id, 'order_id', o.id, 'amount', o.total)
+    from public.orders o where o.id = v_allocation.order_id;
+
+    insert into public.notifications(user_id, type, title, body, data)
+    select o.seller_id, 'order.confirmed', 'New paid order',
+           'A new paid order is ready for processing.',
+           jsonb_build_object('order_id', o.id, 'amount', o.total)
+    from public.orders o where o.id = v_allocation.order_id;
+
+    for v_item in
+      select oi.product_id, oi.quantity
+      from public.order_items oi
+      where oi.order_id = v_allocation.order_id
+    loop
+      update public.inventory
+      set quantity = quantity - v_item.quantity,
+          reserved_quantity = reserved_quantity - v_item.quantity
+      where product_id = v_item.product_id
+        and reserved_quantity >= v_item.quantity;
+
+      get diagnostics v_affected = row_count;
+      if v_affected <> 1 then
+        raise exception 'Inventory reservation missing for product %', v_item.product_id;
+      end if;
+    end loop;
+  end loop;
+
+  update public.checkout_sessions
+  set status = 'paid'::public.checkout_session_status, updated_at = now()
+  where id = v_session.id;
+
+  insert into public.transactions(
+    payment_id, order_id, user_id, type, amount, currency, reference, status, metadata
+  )
+  values(
+    v_payment.id, null, v_session.buyer_id, 'payment',
+    v_payment.amount, v_payment.currency, v_payment.provider_reference, 'success', p_provider_data
+  )
+  on conflict(reference) do update set status = 'success', metadata = excluded.metadata;
+
+  return jsonb_build_object(
+    'checkout_session_id', v_session.id,
+    'status', 'paid',
+    'total', v_session.total,
+    'order_count', (select count(*) from public.checkout_session_orders where checkout_session_id = v_session.id)
+  );
+end;
+$;
+
+revoke execute on function public.complete_checkout_payment(uuid,jsonb) from public, anon, authenticated;
+grant execute on function public.complete_checkout_payment(uuid,jsonb) to service_role;
