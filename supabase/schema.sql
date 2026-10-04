@@ -9,6 +9,7 @@ create type public.seller_status as enum ('pending', 'approved', 'suspended', 'r
 create type public.product_status as enum ('draft', 'active', 'archived');
 create type public.order_status as enum ('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded');
 create type public.payment_status as enum ('pending', 'paid', 'failed', 'refunded', 'partially_refunded');
+create type public.checkout_session_status as enum ('pending', 'paid', 'failed', 'cancelled', 'expired');
 create type public.dispute_status as enum ('open', 'under_review', 'resolved', 'rejected');
 
 create table public.profiles (
@@ -154,6 +155,40 @@ create table public.orders (
 create index orders_buyer_idx on public.orders(buyer_id, created_at desc);
 create index orders_seller_idx on public.orders(seller_id, created_at desc);
 
+create table public.checkout_sessions (
+  id uuid primary key default gen_random_uuid(),
+  buyer_id uuid not null references public.profiles(id) on delete restrict,
+  address_id uuid references public.addresses(id) on delete set null,
+  status public.checkout_session_status not null default 'pending',
+  subtotal numeric(14,2) not null default 0 check (subtotal >= 0),
+  shipping_fee numeric(14,2) not null default 0 check (shipping_fee >= 0),
+  total numeric(14,2) not null default 0 check (total >= 0),
+  currency text not null default 'NGN',
+  expires_at timestamptz not null default (now() + interval '30 minutes'),
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.checkout_session_orders (
+  checkout_session_id uuid not null references public.checkout_sessions(id) on delete cascade,
+  order_id uuid not null references public.orders(id) on delete cascade,
+  seller_id uuid not null references public.seller_profiles(user_id) on delete restrict,
+  amount numeric(14,2) not null check (amount >= 0),
+  created_at timestamptz not null default now(),
+  primary key (checkout_session_id, order_id),
+  unique (order_id)
+);
+
+create index checkout_sessions_buyer_status_idx
+  on public.checkout_sessions(buyer_id, status, created_at desc);
+create index checkout_sessions_expiry_idx
+  on public.checkout_sessions(status, expires_at);
+create index checkout_session_orders_order_idx
+  on public.checkout_session_orders(order_id);
+create index checkout_session_orders_seller_idx
+  on public.checkout_session_orders(seller_id, created_at desc);
+
 create table public.order_items (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.orders(id) on delete cascade,
@@ -167,7 +202,7 @@ create table public.order_items (
 
 create table public.payments (
   id uuid primary key default gen_random_uuid(),
-  order_id uuid not null references public.orders(id) on delete cascade,
+  order_id uuid references public.orders(id) on delete cascade,
   provider text not null,
   provider_reference text unique,
   amount numeric(14,2) not null check (amount >= 0),
@@ -178,6 +213,25 @@ create table public.payments (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.payments
+  add column checkout_session_id uuid references public.checkout_sessions(id) on delete cascade;
+
+alter table public.payments
+  add constraint payments_single_owner_check
+  check ((order_id is not null) <> (checkout_session_id is not null));
+
+create table public.payment_allocations (
+  id uuid primary key default gen_random_uuid(),
+  payment_id uuid not null references public.payments(id) on delete cascade,
+  order_id uuid not null references public.orders(id) on delete cascade,
+  amount numeric(14,2) not null check (amount >= 0),
+  created_at timestamptz not null default now(),
+  unique (payment_id, order_id)
+);
+
+create index payment_allocations_order_idx
+  on public.payment_allocations(order_id, created_at desc);
 
 create table public.transactions (
   id uuid primary key default gen_random_uuid(),
@@ -304,6 +358,9 @@ alter table public.payments enable row level security;
 alter table public.transactions enable row level security;
 alter table public.reviews enable row level security;
 alter table public.notifications enable row level security;
+alter table public.checkout_sessions enable row level security;
+alter table public.checkout_session_orders enable row level security;
+alter table public.payment_allocations enable row level security;
 alter table public.commissions enable row level security;
 alter table public.disputes enable row level security;
 
@@ -428,12 +485,52 @@ with check (
   exists (select 1 from public.orders o where o.id = order_id and o.buyer_id = (select auth.uid()))
 );
 
-create policy payments_related_order on public.payments
+create policy payments_related_order_or_session on public.payments
 for select to authenticated
 using (
   exists (
     select 1 from public.orders o
     where o.id = order_id and (o.buyer_id = (select auth.uid()) or o.seller_id = (select auth.uid()) or public.is_admin())
+  )
+  or exists (
+    select 1 from public.checkout_sessions cs
+    where cs.id = checkout_session_id and (cs.buyer_id = (select auth.uid()) or public.is_admin())
+  )
+);
+
+create policy checkout_sessions_buyer_admin on public.checkout_sessions
+for select to authenticated
+using (buyer_id = (select auth.uid()) or public.is_admin());
+
+create policy checkout_session_orders_participant_admin on public.checkout_session_orders
+for select to authenticated
+using (
+  exists (
+    select 1 from public.checkout_sessions cs
+    where cs.id = checkout_session_id and (cs.buyer_id = (select auth.uid()) or public.is_admin())
+  )
+  or seller_id = (select auth.uid())
+  or public.is_admin()
+);
+
+create policy payment_allocations_participant_admin on public.payment_allocations
+for select to authenticated
+using (
+  exists (
+    select 1 from public.payments p
+    where p.id = payment_id
+      and (
+        exists (
+          select 1 from public.orders o
+          where o.id = p.order_id
+            and (o.buyer_id = (select auth.uid()) or o.seller_id = (select auth.uid()))
+        )
+        or exists (
+          select 1 from public.checkout_sessions cs
+          where cs.id = p.checkout_session_id and cs.buyer_id = (select auth.uid())
+        )
+        or public.is_admin()
+      )
   )
 );
 
@@ -474,6 +571,11 @@ create index product_images_product_idx on public.product_images(product_id, sor
 create index reviews_product_idx on public.reviews(product_id, created_at desc);
 create index notifications_user_idx on public.notifications(user_id, created_at desc);
 create index disputes_order_idx on public.disputes(order_id, created_at desc);
+
+grant select on public.checkout_sessions to authenticated;
+grant select on public.checkout_session_orders to authenticated;
+grant select on public.payment_allocations to authenticated;
+grant all on public.checkout_sessions, public.checkout_session_orders, public.payment_allocations to service_role;
 
  
 -- Phase 2 checkout functions are maintained in
