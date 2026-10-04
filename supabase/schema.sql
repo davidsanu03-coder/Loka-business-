@@ -474,3 +474,8 @@ create index product_images_product_idx on public.product_images(product_id, sor
 create index reviews_product_idx on public.reviews(product_id, created_at desc);
 create index notifications_user_idx on public.notifications(user_id, created_at desc);
 create index disputes_order_idx on public.disputes(order_id, created_at desc);
+
+ 
+-- Phase 2 checkout functions are maintained in
+-- supabase/migrations/20261004150200_loka_phase_two_commerce.sql.
+-- Keep the migration as the deployable source of truth.
