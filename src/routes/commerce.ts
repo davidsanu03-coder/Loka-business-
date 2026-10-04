@@ -237,6 +237,50 @@ export async function commerceRoutes(app: FastifyInstance) {
       return { data };
     });
 
+    commerce.get("/checkout-sessions/:id", async (request) => {
+      const params = request.params as { id: string };
+      const client = getRequestSupabase(request);
+
+      const { data, error } = await client
+        .from("checkout_sessions")
+        .select(
+          "*, checkout_session_orders(order_id, seller_id, amount, created_at, orders(id, status, subtotal, shipping_fee, total, currency))"
+        )
+        .eq("id", params.id)
+        .eq("buyer_id", request.user!.id)
+        .single();
+
+      if (error || !data) throw commerce.httpErrors.notFound("Checkout session not found");
+
+      if (data.status === "pending" && new Date(data.expires_at).getTime() <= Date.now()) {
+        const { error: expireError } = await client.rpc("expire_checkout_sessions");
+        if (!expireError) {
+          const { data: refreshed } = await client
+            .from("checkout_sessions")
+            .select(
+              "*, checkout_session_orders(order_id, seller_id, amount, created_at, orders(id, status, subtotal, shipping_fee, total, currency))"
+            )
+            .eq("id", params.id)
+            .eq("buyer_id", request.user!.id)
+            .single();
+
+          return { data: refreshed ?? data };
+        }
+      }
+
+      return { data };
+    });
+
+    commerce.post("/checkout-sessions/:id/cancel", async (request) => {
+      const params = request.params as { id: string };
+      const { data, error } = await getRequestSupabase(request).rpc("cancel_checkout_session", {
+        p_session_id: params.id
+      });
+
+      if (error) throw commerce.httpErrors.badRequest(error.message);
+      return { data };
+    });
+
     commerce.get("/orders/:id", async (request) => {
       const params = request.params as { id: string };
       const { data, error } = await getRequestSupabase(request)
