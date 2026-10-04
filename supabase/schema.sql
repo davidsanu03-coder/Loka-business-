@@ -182,6 +182,7 @@ create table public.checkout_session_orders (
 
 create index checkout_sessions_buyer_status_idx
   on public.checkout_sessions(buyer_id, status, created_at desc);
+create index checkout_sessions_address_idx on public.checkout_sessions(address_id);
 create index checkout_sessions_expiry_idx
   on public.checkout_sessions(status, expires_at);
 create index checkout_session_orders_order_idx
@@ -232,6 +233,7 @@ create table public.payment_allocations (
 
 create index payment_allocations_order_idx
   on public.payment_allocations(order_id, created_at desc);
+create index payments_checkout_session_idx on public.payments(checkout_session_id);
 
 create table public.transactions (
   id uuid primary key default gen_random_uuid(),
