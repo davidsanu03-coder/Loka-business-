@@ -1,64 +1,61 @@
-# LOKA Nigeria  Business 
-foundation for LOKA — a multi-seller e-commerce marketplace.
+# LOKA — Multi-Seller E-commerce Marketplace Backend
 
-## Backend domains
-- **User / Buyer** — account, profile, cart, wishlist, orders, reviews and notifications.
-- **Seller** — seller onboarding, store, products, inventory, seller orders and earnings.
-- **Company / Admin** — platform users, sellers, products, orders, commissions, disputes and operational oversight.
+The backend foundation for LOKA, a multi-seller marketplace designed around buyers, sellers and platform administration.
 
 ## Architecture
-One backend with role-based access control:
-`/api/user`
-`/api/seller`
-`/api/admin`
 
-Shared infrastructure:
-- Node.js + TypeScript
-- Fastify REST API
+Role-based route domains:
+
+`/api/user` · `/api/seller` · `/api/admin`
+
+### Buyer
+Account, profile, cart, wishlist, checkout, orders, reviews and notifications.
+
+### Seller
+Onboarding, store management, products, inventory, orders and earnings.
+
+### Platform / Admin
+User and seller management, product/order oversight, commissions, disputes and operational analytics.
+
+## Technology
+
+- Node.js
+- TypeScript
+- Fastify
 - Supabase PostgreSQL
 - Supabase Auth
 - PostgreSQL Row Level Security
-- Zod validation
+- Zod
+- Paystack integration
 
-## Current foundation
-- Fastify server
-- Health endpoint
-- Supabase bearer-token authentication
-- User/seller/admin RBAC
-- Initial buyer, seller and admin routes
-- Marketplace database schema
-- RLS policies for buyer/seller/admin access
-- Core commerce tables for products, inventory, carts, checkout sessions, seller orders, payments, payment allocations, reviews, notifications, commissions and disputes
-- Atomic multi-seller checkout: one checkout session can create multiple seller orders
-- One Paystack transaction per checkout session with payment allocation across seller orders
-- Payment settlement confirms orders and converts reserved stock into sold stock
-- Failed/cancelled/expired checkout flows release reserved inventory
-- Seller order lifecycle: confirmed → processing → shipped → delivered
-- Commission accounting with seller-rate snapshots, eligibility on delivery and refund reversals
-- Paystack partial/full refund workflow with webhook reconciliation
-- Buyer/seller notification inbox and order/payment/refund notifications
-- Admin and seller operational analytics endpoints
+## Commerce architecture
 
-## Local setup
+The backend supports multi-seller checkout, seller-order splitting, payment allocation, inventory reservation and settlement, order lifecycle management, refunds, commissions and notifications.
+
+The key design goal is transactional consistency: one buyer checkout can produce multiple seller orders while preserving payment and inventory state.
+
+## Local development
+
 ```bash
 npm install
 cp .env.example .env
 npm run dev
 ```
 
-Required environment variables are documented in `.env.example`.
+Type-check:
 
-## Database
-The initial marketplace schema is in `supabase/schema.sql`. It is intended for a dedicated LOKA Supabase project, not the existing Royexa CRM database.
+```bash
+npm run typecheck
+```
 
-## Build direction
-Phase 1 and Phase 2 are implemented. Phase 2.5 now covers the production checkout boundary:
-1. Checkout session creation
-2. Multi-seller order splitting
-3. Single Paystack payment initialization/verification/webhook handling
-4. Payment allocation to seller orders
-5. Inventory reservation, settlement and release
-6. Order lifecycle enforcement
-7. Automatic expiry of unpaid checkout sessions
+Tests:
 
-Next: payment/refund settlement hardening, commissions, notifications and analytics before Phase 3.
+```bash
+npm test
+```
+
+## Status
+
+Phase 1 and Phase 2 functionality are implemented, with continued production hardening and Phase 3 capabilities.
+
+> Built as an independent full-stack marketplace engineering project by Ojelabi David Ayomide.
