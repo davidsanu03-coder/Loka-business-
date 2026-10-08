@@ -21,7 +21,13 @@ export async function buildApp() {
   app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
     const rawBody = typeof body === "string" ? body : body.toString("utf8");
     request.rawBody = rawBody;
-    try { done(null, JSON.parse(rawBody)); } catch { done(new Error("Invalid JSON body")); }
+    try {
+      done(null, JSON.parse(rawBody));
+    } catch {
+      const error = new Error("Invalid JSON body");
+      (error as Error & { statusCode?: number }).statusCode = 400;
+      done(error);
+    }
   });
 
   await app.register(helmet);
