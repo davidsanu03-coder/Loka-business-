@@ -1,0 +1,68 @@
+:root,
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --page-bg: #0C0D17;
+    --surface-bg: #060914;
+    --card-bg: #0B1225;
+    --input-bg: #080E1D;
+    --border-color: #1C2943;
+    --text-primary: #F9FAFF;
+    --text-secondary: #A7B1C8;
+    --link-color: #5C91FF;
+    --hover-bg: #172443;
+
+    --primary-blue: #1A5CFF;
+    --primary-purple: #4A35F2;
+    --primary-cyan: #00C0D8;
+    --primary-gradient: linear-gradient(
+        100deg,
+        #1A5CFF 0%,
+        #4A35F2 55%,
+        #00C0D8 100%
+    );
+}
+
+[data-theme="light"] {
+    color-scheme: light;
+
+    --page-bg: #F3F6FC;
+    --surface-bg: #EAF0FA;
+    --card-bg: #FFFFFF;
+    --input-bg: #F8FAFF;
+    --border-color: #D7E0EF;
+    --text-primary: #122039;
+    --text-secondary: #5F6F89;
+    --link-color: #1A5CFF;
+    --hover-bg: #E5ECFA;
+
+    --primary-blue: #1A5CFF;
+    --primary-purple: #4A35F2;
+    --primary-cyan: #00C0D8;
+    --primary-gradient: linear-gradient(
+        100deg,
+        #1A5CFF 0%,
+        #4A35F2 55%,
+        #00C0D8 100%
+    );
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
