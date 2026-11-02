@@ -55,6 +55,12 @@ Body fields may include:
 ### GET /api/categories
 Returns active categories.
 
+### GET /api/products
+Public active-product catalogue. Supports `q`, `categoryId`, `category` (category slug), `page`, `limit` (max 48), and `sort` (`newest`, `price_asc`, `price_desc`). Returns `{ data, meta: { page, limit, total, pages } }` with product images, inventory, and store summary.
+
+### GET /api/products/:slug
+Returns one active product by slug, including product images, inventory, and store summary.
+
 ### GET /api/products/:productId/reviews
 Returns:
 ```json
