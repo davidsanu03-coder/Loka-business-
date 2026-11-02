@@ -44,3 +44,17 @@ Before claiming 50,000 concurrent active users:
 - Existing backend APIs: cart, addresses, checkout sessions, buyer orders, Paystack initialization/verification/webhook, seller products/inventory/orders/analytics, and admin operations are present in the codebase.
 - Frontend: role-aware dashboard entry and customer cart-to-checkout initiation UI have been added.
 - Still required: end-to-end validation against configured Supabase and Paystack test credentials; checkout redirect/return verification UX; complete seller product/store management UI; admin operational controls; shared rate-limit implementation backed by Redis/atomic storage; automated integration tests; and load testing.
+
+
+## Verification snapshot — 2026-11-02
+
+- Connected Supabase project `Loka-business-` is active and healthy in `eu-west-1`, on the Free organization plan.
+- Ten migrations are recorded, through `phase_three_review_dispute_indexes`.
+- All inspected marketplace tables have RLS enabled. A read-only query under the `anon` database role successfully queried active public products/categories; a read-only query under `authenticated` with a synthetic unregistered subject saw zero profile rows.
+- The production database currently has zero Auth users, profiles, products, orders, payments, carts and checkout sessions. Therefore no real customer/seller/admin account or checkout can be exercised against this project yet.
+- Supabase security advisors reported six SECURITY DEFINER functions executable by authenticated users. The inspected checkout/order functions perform explicit `auth.uid()` and ownership checks, but each function and its grants still needs a complete security review before launch.
+- Performance advisors report 12 foreign keys without covering indexes and several overlapping permissive RLS policies. The unindexed foreign keys should be prioritized before scaling.
+- GitHub Actions on the current PR head passed both frontend build and backend typecheck/tests. This validates compilation and the repository's current test suite only; it is not browser E2E or production integration evidence.
+- No LOKA Vercel project/backend deployment is linked in the connected Vercel account. No Paystack test transaction has been run, and no 50k load test has been run.
+
+Do not interpret the read-only role checks as a full auth or checkout test. A real checkout requires a test buyer, approved test seller, active product with inventory, deployed API configured with the Supabase service-role key and Paystack test secret, and a configured Paystack callback/webhook URL.
