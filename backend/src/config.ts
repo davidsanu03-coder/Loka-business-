@@ -7,7 +7,7 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  CORS_ORIGIN: z.string().default("http://localhost:3000"),
+  CORS_ORIGIN: z.string().default("http://localhost:5173"),
   PAYSTACK_SECRET_KEY: z.string().min(1).optional(),
   PAYSTACK_CALLBACK_URL: z.string().url().optional()
 });
