@@ -3,6 +3,7 @@ import Login from './auth/login';
 import ToggleSignup from './auth/ToggleSignup';
 import Marketplace from './marketplace/Marketplace';
 import ProductDetail from './marketplace/ProductDetail';
+import Dashboard from './dashboard/Dashboard';
 import { ThemeProvider } from './theme/ThemeContext';
 import './theme/theme.css';
 
@@ -17,6 +18,7 @@ function App() {
                     <Route path="/signup/seller" element={<ToggleSignup />} />
                     <Route path="/app" element={<Marketplace />} />
                     <Route path="/products/:slug" element={<ProductDetail />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </BrowserRouter>
