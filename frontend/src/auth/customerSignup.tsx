@@ -13,7 +13,8 @@ const CustomerSignup: React.FC = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
-        const form = new FormData(e.currentTarget);
+        const formElement = e.currentTarget;
+        const form = new FormData(formElement);
         const password = String(form.get('password') ?? '');
         const confirmPassword = String(form.get('confirmPassword') ?? '');
         if (password !== confirmPassword) {
@@ -32,7 +33,7 @@ const CustomerSignup: React.FC = () => {
             setSuccess(result.session
                 ? 'Your LOKA account has been created. You can now log in.'
                 : 'Your account has been created. Check your email to confirm your address, then log in.');
-            e.currentTarget.reset();
+            formElement.reset();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unable to create your account. Please try again.');
         } finally {
