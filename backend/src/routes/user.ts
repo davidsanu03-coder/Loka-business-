@@ -50,7 +50,7 @@ export async function userRoutes(app: FastifyInstance) {
                 currency,
                 status,
                 provider,
-                reference,
+                provider_reference,
                 paid_at,
                 created_at
               )
