@@ -3,7 +3,7 @@
 Backend owner: David
 Frontend owner: Gemini Gem
 Repository: davidsanu03-coder/Loka-business-
-Base API: `<LOKA_BACKEND_URL>`
+Base API: configured through frontend `VITE_API_BASE_URL` (backend origin; do not hardcode a production URL)
 Backend: Fastify + TypeScript + Supabase Auth/PostgreSQL + Zod
 
 ## Non-negotiable integration rules
@@ -257,7 +257,7 @@ Recommended Next.js structure:
 
 Create a single API client rather than scattering fetch calls across components.
 
-The API client must automatically attach the current access token.
+The API client must automatically attach the current access token. The current frontend stores the access token under `loka_token`; never store a Supabase service-role/secret key in the frontend.
 
 ## Current backend phases
 
