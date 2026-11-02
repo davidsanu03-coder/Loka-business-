@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import {useEffect,useState} from "react";
 import {Link,useSearchParams} from "react-router-dom";
 import {lokaApi} from "../lib/api";
 import "./dashboard.css";
