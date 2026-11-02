@@ -142,3 +142,93 @@ export async function logoutAccount(): Promise<void> {
     clearAuth();
   }
 }
+
+
+type JsonRecord = Record<string, unknown>;
+const json = (value: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(value) });
+const patch = (value: unknown): RequestInit => ({ method: "PATCH", body: JSON.stringify(value) });
+const put = (value: unknown): RequestInit => ({ method: "PUT", body: JSON.stringify(value) });
+const id = (value: string) => encodeURIComponent(value);
+
+/**
+ * Typed route map for the endpoints documented in FRONTEND_BACKEND_CONTRACT.md.
+ * UI features should call this map instead of creating ad-hoc fetch requests.
+ */
+export const lokaApi = {
+  categories: {
+    list: () => apiRequest<JsonRecord>("/api/categories", {}, false),
+    adminList: () => apiRequest<JsonRecord>("/api/admin/categories"),
+    create: (body: JsonRecord) => apiRequest<JsonRecord>("/api/admin/categories", json(body)),
+    update: (categoryId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/admin/categories/${id(categoryId)}`, patch(body)),
+    remove: (categoryId: string) => apiRequest<JsonRecord>(`/api/admin/categories/${id(categoryId)}`, { method: "DELETE" })
+  },
+  products: {
+    reviews: (productId: string) => apiRequest<JsonRecord>(`/api/products/${id(productId)}/reviews`, {}, false),
+    createReview: (productId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/products/${id(productId)}/reviews`, json(body)),
+    updateReview: (productId: string, reviewId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/products/${id(productId)}/reviews/${id(reviewId)}`, patch(body)),
+    deleteReview: (productId: string, reviewId: string) => apiRequest<JsonRecord>(`/api/products/${id(productId)}/reviews/${id(reviewId)}`, { method: "DELETE" })
+  },
+  user: {
+    profile: () => apiRequest<JsonRecord>("/api/user/profile"),
+    updateProfile: (body: JsonRecord) => apiRequest<JsonRecord>("/api/user/profile", patch(body)),
+    orders: () => apiRequest<JsonRecord>("/api/user/orders"),
+    order: (orderId: string) => apiRequest<JsonRecord>(`/api/user/orders/${id(orderId)}`),
+    cancelOrder: (orderId: string) => apiRequest<JsonRecord>(`/api/user/orders/${id(orderId)}/cancel`, { method: "POST" }),
+    notifications: () => apiRequest<JsonRecord>("/api/user/notifications"),
+    markNotificationRead: (notificationId: string) => apiRequest<JsonRecord>(`/api/user/notifications/${id(notificationId)}/read`, patch({})),
+    markAllNotificationsRead: () => apiRequest<JsonRecord>("/api/user/notifications/read-all", { method: "POST" }),
+    wishlist: () => apiRequest<JsonRecord>("/api/user/wishlist"),
+    cart: () => apiRequest<JsonRecord>("/api/user/cart"),
+    setCartItem: (productId: string, quantity: number) => apiRequest<JsonRecord>(`/api/user/cart/items/${id(productId)}`, put({ quantity })),
+    removeCartItem: (productId: string) => apiRequest<JsonRecord>(`/api/user/cart/items/${id(productId)}`, { method: "DELETE" }),
+    clearCart: () => apiRequest<JsonRecord>("/api/user/cart", { method: "DELETE" }),
+    addresses: () => apiRequest<JsonRecord>("/api/user/addresses"),
+    createAddress: (body: JsonRecord) => apiRequest<JsonRecord>("/api/user/addresses", json(body)),
+    updateAddress: (addressId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/user/addresses/${id(addressId)}`, patch(body)),
+    deleteAddress: (addressId: string) => apiRequest<JsonRecord>(`/api/user/addresses/${id(addressId)}`, { method: "DELETE" }),
+    checkout: (body: JsonRecord) => apiRequest<JsonRecord>("/api/user/checkout", json(body)),
+    checkoutSession: (sessionId: string) => apiRequest<JsonRecord>(`/api/user/checkout-sessions/${id(sessionId)}`),
+    cancelCheckoutSession: (sessionId: string) => apiRequest<JsonRecord>(`/api/user/checkout-sessions/${id(sessionId)}/cancel`, { method: "POST" }),
+    disputes: () => apiRequest<JsonRecord>("/api/user/disputes"),
+    createOrderDispute: (orderId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/user/orders/${id(orderId)}/disputes`, json(body)),
+    updateDispute: (disputeId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/user/disputes/${id(disputeId)}`, patch(body))
+  },
+  seller: {
+    apply: (body: SellerApplication) => apiRequest<JsonRecord>("/api/sellers/apply", json(body)),
+    profile: () => apiRequest<JsonRecord>("/api/seller/profile"),
+    stores: () => apiRequest<JsonRecord>("/api/seller/stores"),
+    createStore: (body: JsonRecord) => apiRequest<JsonRecord>("/api/seller/store", json(body)),
+    updateStore: (storeId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/seller/store/${id(storeId)}`, patch(body)),
+    products: () => apiRequest<JsonRecord>("/api/seller/products"),
+    product: (productId: string) => apiRequest<JsonRecord>(`/api/seller/products/${id(productId)}`),
+    createProduct: (body: JsonRecord) => apiRequest<JsonRecord>("/api/seller/products", json(body)),
+    updateProduct: (productId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/seller/products/${id(productId)}`, patch(body)),
+    deleteProduct: (productId: string) => apiRequest<JsonRecord>(`/api/seller/products/${id(productId)}`, { method: "DELETE" }),
+    inventory: (productId: string) => apiRequest<JsonRecord>(`/api/seller/inventory/${id(productId)}`),
+    updateInventory: (productId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/seller/inventory/${id(productId)}`, put(body)),
+    orders: () => apiRequest<JsonRecord>("/api/seller/orders"),
+    updateOrderStatus: (orderId: string, status: string) => apiRequest<JsonRecord>(`/api/seller/orders/${id(orderId)}/status`, patch({ status })),
+    commissions: () => apiRequest<JsonRecord>("/api/seller/commissions"),
+    analytics: () => apiRequest<JsonRecord>("/api/seller/analytics"),
+    dashboard: () => apiRequest<JsonRecord>("/api/seller/dashboard")
+  },
+  admin: {
+    users: () => apiRequest<JsonRecord>("/api/admin/users"),
+    sellers: () => apiRequest<JsonRecord>("/api/admin/sellers"),
+    approveSeller: (userId: string) => apiRequest<JsonRecord>(`/api/admin/sellers/${id(userId)}/approve`, patch({})),
+    rejectSeller: (userId: string) => apiRequest<JsonRecord>(`/api/admin/sellers/${id(userId)}/reject`, patch({})),
+    suspendSeller: (userId: string) => apiRequest<JsonRecord>(`/api/admin/sellers/${id(userId)}/suspend`, patch({})),
+    orders: () => apiRequest<JsonRecord>("/api/admin/orders"),
+    commissions: () => apiRequest<JsonRecord>("/api/admin/commissions"),
+    markCommissionPaid: (commissionId: string) => apiRequest<JsonRecord>(`/api/admin/commissions/${id(commissionId)}/paid`, patch({})),
+    refund: (body: JsonRecord) => apiRequest<JsonRecord>("/api/payments/refunds", json(body)),
+    analytics: () => apiRequest<JsonRecord>("/api/admin/analytics"),
+    dashboard: () => apiRequest<JsonRecord>("/api/admin/dashboard"),
+    disputes: () => apiRequest<JsonRecord>("/api/admin/disputes"),
+    updateDispute: (disputeId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/admin/disputes/${id(disputeId)}`, patch(body))
+  },
+  payments: {
+    initialize: (body: JsonRecord) => apiRequest<JsonRecord>("/api/payments/initialize", json(body)),
+    verify: (reference: string) => apiRequest<JsonRecord>("/api/payments/verify", json({ reference }))
+  }
+};
