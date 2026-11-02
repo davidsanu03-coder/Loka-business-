@@ -237,6 +237,18 @@ export async function commerceRoutes(app: FastifyInstance) {
       return { data };
     });
 
+    commerce.get("/checkout-sessions", async (request) => {
+      const { data, error } = await getRequestSupabase(request)
+        .from("checkout_sessions")
+        .select("id, status, total, currency, expires_at, created_at, checkout_session_orders(order_id, orders(id, status, total, created_at))")
+        .eq("buyer_id", request.user!.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw commerce.httpErrors.internalServerError(error.message);
+      return { data: data ?? [] };
+    });
+
     commerce.get("/checkout-sessions/:id", async (request) => {
       const params = request.params as { id: string };
       const client = getRequestSupabase(request);
