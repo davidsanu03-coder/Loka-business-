@@ -32,7 +32,7 @@ export default function Dashboard() {
     setBusy(true); setError("");
     try {
       const current = await getCurrentUser();
-      const userRole = current.user.role || current.user.app_metadata?.role || "user";
+      const userRole = current.user.role || "user";
       setRole(userRole);
       if (userRole === "admin") {
         const [dashboard, allOrders, allSellers] = await Promise.all([lokaApi.admin.dashboard(), lokaApi.admin.orders(), lokaApi.admin.sellers()]);
