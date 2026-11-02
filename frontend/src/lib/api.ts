@@ -155,6 +155,15 @@ const id = (value: string) => encodeURIComponent(value);
  * UI features should call this map instead of creating ad-hoc fetch requests.
  */
 export const lokaApi = {
+  marketplace: {
+    products: (params: { q?: string; categoryId?: string; category?: string; page?: number; limit?: number; sort?: string } = {}) => {
+      const search = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== "") search.set(key, String(value)); });
+      return apiRequest<{ data: Array<Record<string, any>>; meta: { page: number; limit: number; total: number; pages: number } }>("/api/products?" + search.toString(), {}, false);
+    },
+    product: (slug: string) => apiRequest<{ data: Record<string, any> }>("/api/products/" + id(slug), {}, false),
+    categories: () => apiRequest<{ data: Array<Record<string, any>> }>("/api/categories", {}, false)
+  },
   categories: {
     list: () => apiRequest<JsonRecord>("/api/categories", {}, false),
     adminList: () => apiRequest<JsonRecord>("/api/admin/categories"),
