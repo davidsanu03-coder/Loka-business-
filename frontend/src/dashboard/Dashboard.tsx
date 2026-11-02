@@ -50,6 +50,7 @@ export default function Dashboard() {
         const storeRows = rows(allStores);
         setStores(storeRows);
         setSelectedStore((currentStore) => currentStore || storeRows[0]?.id || "");
+        if (storeRows[0]) setStoreForm({ name: storeRows[0].name || "", description: storeRows[0].description || "" });
         setCategories(rows(allCategories));
       } else {
         const [cartResult, orderResult, sessionResult] = await Promise.all([
