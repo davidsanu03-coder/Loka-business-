@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/login';
 import ToggleSignup from './auth/ToggleSignup';
-import AuthHome from './auth/AuthHome';
 import Marketplace from './marketplace/Marketplace';
 import ProductDetail from './marketplace/ProductDetail';
 import { ThemeProvider } from './theme/ThemeContext';
