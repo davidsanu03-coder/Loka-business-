@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, lokaApi, logoutAccount } from "../lib/api";
 import "./dashboard.css";
@@ -84,7 +85,7 @@ export default function Dashboard() {
     catch (e) { setError(e instanceof Error ? e.message : "Could not update order"); }
   };
 
-  const saveStore = async (event: React.FormEvent) => {
+  const saveStore = async (event: FormEvent) => {
     event.preventDefault(); setWorking(true); setError(""); setNotice("");
     try {
       const slug = storeForm.slug || storeForm.name.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -109,7 +110,10 @@ export default function Dashboard() {
       if (editingProduct) await lokaApi.seller.updateProduct(editingProduct,payload);
       else { const created:any = await lokaApi.seller.createProduct(payload); productId = created?.data?.id; }
       if (!productId) throw new Error("Product saved without a product ID; inventory was not updated.");
-      await lokaApi.seller.updateInventory(productId,{ quantity:Number(productForm.quantity), reservedQuantity:0 });
+      const currentInventory:any = editingProduct ? await lokaApi.seller.inventory(productId) : null;
+      const reservedQuantity = Number(currentInventory?.data?.reserved_quantity ?? currentInventory?.data?.reservedQuantity ?? 0);
+      if (Number(productForm.quantity) < reservedQuantity) throw new Error("Available stock cannot be lower than stock already reserved for customer orders.");
+      await lokaApi.seller.updateInventory(productId,{ quantity:Number(productForm.quantity), reservedQuantity });
       setProductForm(emptyProduct); setEditingProduct(""); setNotice("Product and inventory saved."); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save product"); }
     finally { setWorking(false); }
