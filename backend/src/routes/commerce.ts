@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../plugins/auth.js";
 import { getRequestSupabase } from "../lib/request-supabase.js";
+import { supabaseAdmin } from "../lib/supabase.js";
 import {
   addressSchema,
   cartItemSchema,
@@ -86,7 +87,10 @@ export async function commerceRoutes(app: FastifyInstance) {
       if (product.status !== "active") throw commerce.httpErrors.badRequest("Product is not available");
       if (product.currency !== "NGN") throw commerce.httpErrors.badRequest("Only NGN products can be added to cart");
 
-      const { data: inventory, error: inventoryError } = await client
+      // Inventory is intentionally not readable to buyers through RLS.
+      // Use the server-only service role for the stock check; never expose this key to the client.
+      if (!supabaseAdmin) throw commerce.httpErrors.serviceUnavailable("Server inventory access is not configured");
+      const { data: inventory, error: inventoryError } = await supabaseAdmin
         .from("inventory")
         .select("quantity, reserved_quantity")
         .eq("product_id", params.productId)
