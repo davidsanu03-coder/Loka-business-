@@ -116,6 +116,31 @@ export default function Dashboard() {
     }
   };
 
+  const saveStoreDetails = async () => {
+    if (!selectedStore) return;
+    setWorking(true); setError(""); setNotice("");
+    try {
+      const result: any = await lokaApi.seller.updateStore(selectedStore, { name: storeForm.name, description: storeForm.description });
+      setStores((current) => current.map((store) => store.id === selectedStore ? { ...store, ...result?.data } : store));
+      setNotice("Store details saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save store details"); }
+    finally { setWorking(false); }
+  };
+
+  const editProductDetails = async (product: Row) => {
+    const name = window.prompt("Product name", product.name);
+    if (name === null || name.trim().length < 2) return;
+    const priceText = window.prompt("Price in NGN", String(product.price));
+    if (priceText === null || !(Number(priceText) > 0)) return;
+    setWorking(true); setError(""); setNotice("");
+    try {
+      const result: any = await lokaApi.seller.updateProduct(product.id, { name: name.trim(), slug: slugify(name), price: Number(priceText) });
+      setProducts((current) => current.map((item) => item.id === product.id ? { ...item, ...result?.data } : item));
+      setNotice("Product details saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not update product"); }
+    finally { setWorking(false); }
+  };
+
   const createStore = async () => {
     setWorking(true); setError(""); setNotice("");
     try {
@@ -237,11 +262,11 @@ export default function Dashboard() {
 
     {role === "seller" && <>
       <section className="dash-metrics"><article><span>Orders (30 days)</span><strong>{metrics.orders?.total ?? 0}</strong></article><article><span>Active products</span><strong>{metrics.products?.active ?? 0}</strong></article><article><span>Gross order value</span><strong>{money(metrics.revenue?.gross)}</strong></article><article><span>Seller net commissions</span><strong>{money(metrics.commissions?.sellerNet)}</strong></article><article><span>Low-stock products</span><strong>{metrics.products?.lowStock ?? 0}</strong></article></section>
-      <section className="dash-panel"><h2>Store management</h2>{stores.length>0?<><label className="dash-field-label">Your store</label><select value={selectedStore} onChange={e=>setSelectedStore(e.target.value)}>{stores.map((s,i)=><option key={s.id||i} value={s.id}>{s.name}</option>)}</select><p>{stores.find(s=>s.id===selectedStore)?.description || "Manage your marketplace store."}</p></>:<p>You need a store before publishing products.</p>}
-        <div className="dash-form"><input placeholder="Store name" value={storeForm.name} onChange={e=>setStoreForm({...storeForm,name:e.target.value})}/><input placeholder="Store description" value={storeForm.description} onChange={e=>setStoreForm({...storeForm,description:e.target.value})}/></div><button className="dash-primary" disabled={working || storeForm.name.trim().length<2} onClick={createStore}>Create store</button>
+      <section className="dash-panel"><h2>Store management</h2>{stores.length>0?<><label className="dash-field-label">Your store</label><select value={selectedStore} onChange={e=>{setSelectedStore(e.target.value);const store=stores.find(s=>s.id===e.target.value);if(store)setStoreForm({name:store.name||"",description:store.description||""});}}>{stores.map((s,i)=><option key={s.id||i} value={s.id}>{s.name}</option>)}</select><p>{stores.find(s=>s.id===selectedStore)?.description || "Manage your marketplace store."}</p><div className="dash-form"><input placeholder="Store name" value={storeForm.name} onChange={e=>setStoreForm({...storeForm,name:e.target.value})}/><input placeholder="Store description" value={storeForm.description} onChange={e=>setStoreForm({...storeForm,description:e.target.value})}/></div><button disabled={working || !selectedStore || storeForm.name.trim().length<2} onClick={saveStoreDetails}>Save store details</button></>:<p>You need a store before publishing products.</p>}
+        <div className="dash-form"><input placeholder="New store name" value={storeForm.name} onChange={e=>setStoreForm({...storeForm,name:e.target.value})}/><input placeholder="New store description" value={storeForm.description} onChange={e=>setStoreForm({...storeForm,description:e.target.value})}/></div><button className="dash-primary" disabled={working || storeForm.name.trim().length<2} onClick={createStore}>Create another store</button>
       </section>
       <section className="dash-panel"><h2>Add a product</h2><div className="dash-form"><input placeholder="Product name" value={productForm.name} onChange={e=>setProductForm({...productForm,name:e.target.value})}/><input type="number" min="0.01" step="0.01" placeholder="Price (NGN)" value={productForm.price} onChange={e=>setProductForm({...productForm,price:e.target.value})}/><input type="number" min="0" step="1" placeholder="Opening stock" value={productForm.stock} onChange={e=>setProductForm({...productForm,stock:e.target.value})}/><input placeholder="SKU (optional)" value={productForm.sku} onChange={e=>setProductForm({...productForm,sku:e.target.value})}/><select value={productForm.categoryId} onChange={e=>setProductForm({...productForm,categoryId:e.target.value})}><option value="">Choose category (optional)</option>{categories.map((c,i)=><option key={c.id||i} value={c.id}>{c.name}</option>)}</select><input placeholder="Description" value={productForm.description} onChange={e=>setProductForm({...productForm,description:e.target.value})}/></div><button className="dash-primary" disabled={working || !selectedStore || productForm.name.trim().length<2 || !(Number(productForm.price)>0) || Number(productForm.stock)<0} onClick={createProduct}>Publish product</button></section>
-      <section className="dash-panel"><h2>Products and inventory</h2>{products.length===0?<p>No products yet. Add your first product above.</p>:products.map((p,i)=><div className="dash-product-row" key={p.id||i}><div><strong>{p.name}</strong><p>{money(p.price)} · SKU {p.sku || "—"}</p></div><select value={p.status} onChange={e=>changeProductStatus(p.id,e.target.value)}><option value="draft">Draft</option><option value="active">Active</option><option value="archived">Archived</option></select><button disabled={working} onClick={async()=>{const raw=window.prompt("Set available stock quantity");if(raw!==null && /^\d+$/.test(raw)) await saveStock(p.id,Number(raw));}}>Update stock</button></div>)}</section>
+      <section className="dash-panel"><h2>Products and inventory</h2>{products.length===0?<p>No products yet. Add your first product above.</p>:products.map((p,i)=><div className="dash-product-row" key={p.id||i}><div><strong>{p.name}</strong><p>{money(p.price)} · SKU {p.sku || "—"}</p></div><select value={p.status} onChange={e=>changeProductStatus(p.id,e.target.value)}><option value="draft">Draft</option><option value="active">Active</option><option value="archived">Archived</option></select><button disabled={working} onClick={()=>editProductDetails(p)}>Edit product</button><button disabled={working} onClick={async()=>{const raw=window.prompt("Set available stock quantity");if(raw!==null && /^\d+$/.test(raw)) await saveStock(p.id,Number(raw));}}>Update stock</button></div>)}</section>
       <section className="dash-panel"><h2>Orders to fulfil</h2>{orders.length===0?<p>No orders yet.</p>:orders.map((o,i)=>{const next=o.status==="confirmed"?"processing":o.status==="processing"?"shipped":o.status==="shipped"?"delivered":"";return <div className="dash-order" key={o.id||i}><div><strong>Order {String(o.id||"").slice(0,8)}</strong><p>{money(o.total)} · {new Date(o.created_at).toLocaleDateString()}</p></div><span className="dash-status">{o.status}</span>{next&&<button disabled={working} onClick={()=>updateStatus(o.id,next)}>Mark {next}</button>}</div>})}</section>
     </>}
 
