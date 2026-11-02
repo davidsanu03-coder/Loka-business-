@@ -13,7 +13,8 @@ const SellerSignup: React.FC = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
-        const form = new FormData(e.currentTarget);
+        const formElement = e.currentTarget;
+        const form = new FormData(formElement);
         const password = String(form.get('password') ?? '');
         const confirmPassword = String(form.get('confirmPassword') ?? '');
         if (password !== confirmPassword) {
@@ -48,7 +49,7 @@ const SellerSignup: React.FC = () => {
                 savePendingSellerApplication(application);
                 setSuccess('Your account was created. Confirm your email, then log in to submit your saved seller application.');
             }
-            e.currentTarget.reset();
+            formElement.reset();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unable to create your seller account. Please try again.');
         } finally {
