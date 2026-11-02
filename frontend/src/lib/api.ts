@@ -196,6 +196,7 @@ export const lokaApi = {
     updateAddress: (addressId: string, body: JsonRecord) => apiRequest<JsonRecord>(`/api/user/addresses/${id(addressId)}`, patch(body)),
     deleteAddress: (addressId: string) => apiRequest<JsonRecord>(`/api/user/addresses/${id(addressId)}`, { method: "DELETE" }),
     checkout: (body: JsonRecord) => apiRequest<JsonRecord>("/api/user/checkout", json(body)),
+    checkoutSessions: () => apiRequest<JsonRecord>("/api/user/checkout-sessions"),
     checkoutSession: (sessionId: string) => apiRequest<JsonRecord>(`/api/user/checkout-sessions/${id(sessionId)}`),
     cancelCheckoutSession: (sessionId: string) => apiRequest<JsonRecord>(`/api/user/checkout-sessions/${id(sessionId)}/cancel`, { method: "POST" }),
     disputes: () => apiRequest<JsonRecord>("/api/user/disputes"),
