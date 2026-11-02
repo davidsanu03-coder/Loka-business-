@@ -362,7 +362,7 @@ export async function paymentRoutes(app: FastifyInstance) {
 
       const { data: existing } = await supabaseAdmin
         .from("payments")
-        .select("id, checkout_session_id, provider_reference, status, amount, currency")
+        .select("id, checkout_session_id, provider_reference, status, amount, currency, metadata")
         .eq("checkout_session_id", session.id)
         .eq("provider", "paystack")
         .in("status", ["pending"])
@@ -373,7 +373,12 @@ export async function paymentRoutes(app: FastifyInstance) {
       if (existing?.provider_reference) {
         return {
           data: existing,
-          checkoutSessionId: session.id
+          checkoutSessionId: session.id,
+          checkout: {
+            authorizationUrl: existing.metadata?.authorization_url ?? null,
+            accessCode: existing.metadata?.access_code ?? null,
+            reference: existing.provider_reference
+          }
         };
       }
 

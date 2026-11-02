@@ -1,0 +1,19 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { lokaApi } from '../lib/api';
+import './marketplace.css';
+type Product = Record<string, any>;
+const money = (v: unknown, c = 'NGN') => new Intl.NumberFormat('en-NG', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(Number(v ?? 0));
+const Marketplace: React.FC = () => {
+ const [params,setParams]=useSearchParams(); const [products,setProducts]=useState<Product[]>([]); const [categories,setCategories]=useState<any[]>([]); const [query,setQuery]=useState(params.get('q')||''); const [loading,setLoading]=useState(true); const [error,setError]=useState(''); const [total,setTotal]=useState(0);
+ const q=params.get('q')||''; const category=params.get('category')||''; const sort=params.get('sort')||'newest';
+ useEffect(()=>{let live=true; lokaApi.marketplace.categories().then(r=>{if(live)setCategories(r.data||[])}).catch(()=>{});return()=>{live=false}},[]);
+ useEffect(()=>{let live=true;setLoading(true);setError('');lokaApi.marketplace.products({q,category,sort,page:1,limit:24}).then(r=>{if(live){setProducts(r.data||[]);setTotal(r.meta.total)}}).catch(e=>{if(live)setError(e instanceof Error?e.message:'Could not load products')}).finally(()=>{if(live)setLoading(false)});return()=>{live=false}},[q,category,sort]);
+ const search=(e:React.FormEvent)=>{e.preventDefault();const p=new URLSearchParams(params);if(query.trim())p.set('q',query.trim());else p.delete('q');setParams(p)};
+ return <main className='marketplace-page'><header className='marketplace-header'><Link className='marketplace-brand' to='/app'>LOKA</Link><form className='marketplace-search' onSubmit={search}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder='Search products...' aria-label='Search products'/><button>Search</button></form><Link to='/login'>Account</Link></header>
+ <section className='marketplace-hero'><p>DISCOVER • SHOP • CONNECT</p><h1>Find something you'll love.</h1><span>Explore products from sellers on LOKA.</span></section>
+ <section className='marketplace-content'><div className='marketplace-heading'><div><h2>Explore products</h2><p>{total} products available</p></div><select aria-label='Sort products' value={sort} onChange={e=>{const p=new URLSearchParams(params);p.set('sort',e.target.value);setParams(p)}}><option value='newest'>Newest</option><option value='price_asc'>Price: low to high</option><option value='price_desc'>Price: high to low</option></select></div>
+ <div className='marketplace-categories'><button className={!category?'selected':''} onClick={()=>{const p=new URLSearchParams(params);p.delete('category');setParams(p)}}>All</button>{categories.map(c=><button key={c.id} className={category===c.slug?'selected':''} onClick={()=>{const p=new URLSearchParams(params);p.set('category',c.slug);setParams(p)}}>{c.name}</button>)}</div>
+ {loading?<p className='marketplace-state'>Loading products…</p>:error?<p className='marketplace-state marketplace-error'>{error}</p>:!products.length?<p className='marketplace-state'>No products found. Try another search or category.</p>:<div className='marketplace-grid'>{products.map(p=>{const photo=p.product_images?.slice()?.sort((a:any,b:any)=>a.sort_order-b.sort_order)?.[0];return <Link className='marketplace-product' to={'/products/'+p.slug} key={p.id}><div className='marketplace-product-image'>{photo?.url?<img src={photo.url} alt={photo.alt_text||p.name}/>:<span>LOKA</span>}</div><div className='marketplace-product-info'><h3>{p.name}</h3><strong>{money(p.price,p.currency)}</strong><p>{p.stores?.name||'LOKA seller'}</p></div></Link>})}</div>}</section></main>;
+};
+export default Marketplace;

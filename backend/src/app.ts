@@ -12,6 +12,7 @@ import { categoryRoutes } from "./routes/categories.js";
 import { commerceRoutes } from "./routes/commerce.js";
 import { paymentRoutes } from "./routes/payments.js";
 import { reviewRoutes } from "./routes/reviews.js";
+import { productRoutes } from "./routes/products.js";
 import { disputeRoutes } from "./routes/disputes.js";
 
 export async function buildApp() {
@@ -36,6 +37,7 @@ export async function buildApp() {
   await app.register(healthRoutes);
   await app.register(authRoutes);
   await app.register(categoryRoutes);
+  await app.register(productRoutes);
   await app.register(userRoutes);
   await app.register(commerceRoutes);
   await app.register(paymentRoutes);

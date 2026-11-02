@@ -3,7 +3,7 @@
 Backend owner: David
 Frontend owner: Gemini Gem
 Repository: davidsanu03-coder/Loka-business-
-Base API: `<LOKA_BACKEND_URL>`
+Base API: configured through frontend `VITE_API_BASE_URL` (backend origin; do not hardcode a production URL)
 Backend: Fastify + TypeScript + Supabase Auth/PostgreSQL + Zod
 
 ## Non-negotiable integration rules
@@ -54,6 +54,12 @@ Body fields may include:
 
 ### GET /api/categories
 Returns active categories.
+
+### GET /api/products
+Public active-product catalogue. Supports `q`, `categoryId`, `category` (category slug), `page`, `limit` (max 48), and `sort` (`newest`, `price_asc`, `price_desc`). Returns `{ data, meta: { page, limit, total, pages } }` with product images, inventory, and store summary.
+
+### GET /api/products/:slug
+Returns one active product by slug, including product images, inventory, and store summary.
 
 ### GET /api/products/:productId/reviews
 Returns:
@@ -257,7 +263,7 @@ Recommended Next.js structure:
 
 Create a single API client rather than scattering fetch calls across components.
 
-The API client must automatically attach the current access token.
+The API client must automatically attach the current access token. The current frontend stores the access token under `loka_token`; never store a Supabase service-role/secret key in the frontend.
 
 ## Current backend phases
 
