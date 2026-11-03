@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './auth.css';
 import ThemeToggle from '../theme/ThemeToggle';
 import { registerAccount } from '../lib/api';
 
 const CustomerSignup: React.FC = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -30,10 +31,12 @@ const CustomerSignup: React.FC = () => {
                 phone: String(form.get('phone') ?? '').trim() || undefined,
                 password
             });
-            setSuccess(result.session
-                ? 'Your LOKA account has been created. You can now log in.'
-                : 'Your account has been created. Check your email to confirm your address, then log in.');
             formElement.reset();
+            if (result.session?.access_token) {
+                navigate('/app', { replace: true });
+                return;
+            }
+            setSuccess('Your account has been created. Check your email to confirm your address, then log in.');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unable to create your account. Please try again.');
         } finally {
