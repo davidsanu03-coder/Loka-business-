@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/login';
-import ToggleSignup from './auth/ToggleSignup';
+import ToggleSignup from './auth/toggleSignup';
 import { ThemeProvider } from './theme/ThemeContext';
 import './theme/theme.css';
 
