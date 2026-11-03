@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './auth.css';
 import ThemeToggle from '../theme/ThemeToggle';
 import { registerAccount, savePendingSellerApplication, submitSellerApplication } from '../lib/api';
 
 const SellerSignup: React.FC = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -39,7 +40,9 @@ const SellerSignup: React.FC = () => {
             if (result.session?.access_token) {
                 try {
                     await submitSellerApplication(application);
-                    setSuccess('Your account is ready and your seller application has been submitted for approval.');
+                    formElement.reset();
+                    navigate('/app', { replace: true });
+                    return;
                 } catch (applicationError) {
                     savePendingSellerApplication(application);
                     setSuccess('Your account was created, but the seller application could not be submitted yet. Sign in later and we will retry it.');
