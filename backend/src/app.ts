@@ -32,7 +32,19 @@ export async function buildApp() {
   });
 
   await app.register(helmet);
-  await app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+  const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
+  await app.register(cors, {
+    credentials: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      let hostname = "";
+      try { hostname = new URL(origin).hostname; } catch { return callback(new Error("Origin not allowed"), false); }
+      const isLokaPreview = hostname.startsWith("loka-business-") &&
+        hostname.endsWith("-davidsanu03-4141s-projects.vercel.app");
+      if (isLokaPreview) return callback(null, true);
+      return callback(new Error("Origin not allowed"), false);
+    }
+  });
   await app.register(sensible);
   await app.register(healthRoutes);
   await app.register(authRoutes);
