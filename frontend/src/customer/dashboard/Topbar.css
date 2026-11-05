@@ -1,0 +1,227 @@
+.customer-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 30px;
+  box-sizing: border-box;
+  color: var(--text-primary);
+  transition: color 0.25s ease;
+}
+
+.topbar-brand {
+  color: var(--text-primary);
+  font-family: var(--bb-font-display, var(--bb-font-body, inherit));
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.topbar-welcome {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-welcome h2 {
+  margin: 0 0 5px;
+  color: var(--text-primary);
+  font-family: var(--bb-font-display, var(--bb-font-body, inherit));
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.topbar-welcome p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--bb-font-body, inherit);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.topbar-theme-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--hover-bg);
+  color: var(--link-color);
+  font-family: var(--bb-font-body, inherit);
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+}
+
+@media (max-width: 900px) {
+  .customer-topbar {
+    gap: 16px;
+  }
+
+  .topbar-welcome h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-topbar {
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .topbar-brand {
+    font-size: 20px;
+  }
+
+  .topbar-welcome {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .topbar-welcome h2 {
+    font-size: 19px;
+  }
+
+  .topbar-welcome p {
+    font-size: 12px;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  .topbar-avatar {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* ================ */
+
+.topbar-menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.topbar-menu-button span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-primary);
+  transition: background-color 0.25s ease;
+}
+
+.topbar-menu-button:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .topbar-menu-button {
+    display: flex;
+  }
+}
+
+/* =================== animations ============= */
+
+/* Topbar entrance */
+
+.customer-topbar {
+    animation: topbarFadeIn 0.5s ease-out both;
+}
+
+@keyframes topbarFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Avatar interaction */
+
+.topbar-avatar {
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.topbar-avatar:hover {
+    transform: scale(1.06);
+}
+
+/* Hamburger interaction */
+
+.topbar-menu-button {
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.topbar-menu-button:hover {
+    background: var(--hover-bg);
+    border-color: var(--link-color);
+}
+
+.topbar-menu-button:active {
+    transform: scale(0.94);
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+    .customer-topbar,
+    .topbar-avatar,
+    .topbar-menu-button,
+    .topbar-menu-button span {
+        animation: none;
+        transition: none;
+    }
+
+    .topbar-avatar:hover,
+    .topbar-menu-button:active {
+        transform: none;
+    }
+}

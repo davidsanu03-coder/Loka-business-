@@ -1,0 +1,145 @@
+
+.customer-dashboard {
+    display: flex;
+    min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    font-family: var(--bb-font-body, inherit);
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.dashboard-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    padding: 24px 30px;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    box-sizing: border-box;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.dashboard-content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    animation: dashboardFadeIn 0.55s ease-out both;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-main {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .customer-dashboard {
+        position: relative;
+        min-width: 0;
+        overflow-x: clip;
+    }
+
+    .dashboard-main {
+        width: 100%;
+        min-width: 0;
+        padding: 16px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+    }
+}
+
+@media (max-width: 380px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile sidebar backdrop */
+
+.sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: none;
+        background: rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        animation: backdropFadeIn 0.25s ease-out both;
+    }
+}
+
+/* Dashboard sections */
+
+.dashboard-sections {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    width: 100%;
+    margin-top: 28px;
+}
+
+@media (max-width: 600px) {
+    .dashboard-sections {
+        gap: 18px;
+        margin-top: 22px;
+    }
+}
+
+/* Animations */
+
+@keyframes dashboardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes backdropFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-content,
+    .sidebar-backdrop {
+        animation: none;
+    }
+}

@@ -1,0 +1,122 @@
+.dashboard-welcome {
+  width: 100%;
+}
+
+.dashboard-welcome h1 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-family: var(--bb-font-display, var(--bb-font-body, inherit));
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.4px;
+}
+
+.welcome-description {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dashboard-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.dashboard-search input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  outline: none;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.25s ease, color 0.25s ease;
+}
+
+.dashboard-search input::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+.dashboard-search input:focus {
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 3px rgba(26, 92, 255, 0.15);
+}
+
+.dashboard-search button {
+  min-height: 42px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-gradient);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-search button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.dashboard-search button:active {
+  transform: translateY(0);
+}
+
+.dashboard-search button:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .dashboard-welcome h1 {
+    font-size: 21px;
+  }
+
+  .welcome-description {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-search {
+    max-width: 100%;
+    gap: 8px;
+  }
+
+  .dashboard-search input {
+    height: 40px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .dashboard-search button {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-search button {
+    width: 100%;
+  }
+}

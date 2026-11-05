@@ -1,0 +1,564 @@
+.customer-settings {
+    display: flex;
+    align-items: stretch;
+    min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--text-primary);
+}
+
+.customer-settings > .customer-sidebar {
+    flex: 0 0 220px;
+}
+
+.settings-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--text-primary);
+}
+
+.settings-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 94px;
+    padding: 20px 36px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-bg);
+}
+
+.settings-topbar-heading h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.settings-topbar-heading p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.settings-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.settings-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.settings-menu-button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--card-bg);
+    cursor: pointer;
+}
+
+.settings-menu-button span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--text-primary);
+}
+
+.settings-content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 34px 36px 28px;
+}
+
+.settings-intro {
+    margin-bottom: 28px;
+}
+
+.settings-eyebrow {
+    color: var(--link-color);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.settings-intro h2 {
+    margin: 10px 0 8px;
+    color: var(--text-primary);
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.settings-intro > p {
+    max-width: 620px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.settings-message {
+    margin-bottom: 20px;
+    padding: 13px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.settings-section {
+    margin-bottom: 26px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--card-bg);
+}
+
+.settings-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    background: var(--surface-bg);
+    color: var(--link-color);
+}
+
+.settings-section-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.settings-section-heading h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.settings-section-heading p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.settings-options {
+    padding: 0 24px;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.settings-option + .settings-option {
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-option-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-option-text label {
+    display: block;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.settings-option-text p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.settings-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 43px;
+    height: 24px;
+    flex-shrink: 0;
+    padding: 3px;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    background: var(--surface-bg);
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.settings-switch span {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.settings-switch.is-on {
+    border-color: var(--primary-blue);
+    background: var(--primary-blue);
+}
+
+.settings-switch.is-on span {
+    transform: translateX(18px);
+    background: #ffffff;
+}
+
+.settings-switch:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 3px;
+}
+
+.settings-links {
+    padding: 0 24px;
+}
+
+.settings-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    padding: 20px 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+}
+
+.settings-link + .settings-link {
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-link > span:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-link strong {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.settings-link small {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.settings-link-arrow {
+    color: var(--link-color);
+    font-size: 20px;
+    transition: transform 0.2s ease;
+}
+
+.settings-link:hover .settings-link-arrow {
+    transform: translateX(3px);
+}
+
+.settings-link:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 4px;
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 6px 0 30px;
+}
+
+.settings-reset-button,
+.settings-save-button {
+    min-height: 42px;
+    padding: 11px 17px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.settings-reset-button {
+    background: var(--surface-bg);
+    color: var(--text-primary);
+}
+
+.settings-reset-button:hover {
+    background: var(--hover-bg);
+}
+
+.settings-save-button {
+    border-color: transparent;
+    background: var(--primary-gradient);
+    color: #ffffff;
+}
+
+.settings-save-button:hover {
+    opacity: 0.9;
+}
+
+.settings-reset-button:focus-visible,
+.settings-save-button:focus-visible,
+.settings-menu-button:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 3px;
+}
+
+.settings-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border-color);
+}
+
+.settings-footer span {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.settings-footer p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.settings-sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .customer-settings > .customer-sidebar {
+        flex-basis: 190px;
+    }
+
+    .settings-topbar {
+        padding: 20px 24px;
+    }
+
+    .settings-content {
+        padding: 28px 24px;
+    }
+}
+
+@media (max-width: 800px) {
+    .settings-menu-button {
+        display: flex;
+    }
+
+    .settings-topbar {
+        justify-content: flex-start;
+        gap: 15px;
+    }
+
+    .settings-topbar-heading {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .settings-topbar-actions {
+        gap: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .customer-settings > .customer-sidebar {
+        flex: 0 0 auto;
+    }
+
+    .settings-main {
+        width: 100%;
+    }
+
+    .settings-topbar {
+        min-height: 78px;
+        gap: 11px;
+        padding: 16px;
+    }
+
+    .settings-topbar-heading h1 {
+        font-size: 19px;
+    }
+
+    .settings-topbar-heading p {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .settings-topbar-actions {
+        gap: 8px;
+    }
+
+    .settings-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 11px;
+    }
+
+    .settings-content {
+        padding: 23px 16px;
+    }
+
+    .settings-intro h2 {
+        font-size: 23px;
+    }
+
+    .settings-intro > p {
+        font-size: 13px;
+    }
+
+    .settings-section-heading {
+        gap: 12px;
+        padding: 18px 15px;
+    }
+
+    .settings-options,
+    .settings-links {
+        padding: 0 15px;
+    }
+
+    .settings-option {
+        gap: 14px;
+        padding: 18px 0;
+    }
+
+    .settings-option-text p {
+        font-size: 11px;
+    }
+
+    .settings-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .settings-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        background: rgba(0, 0, 0, 0.55);
+        cursor: pointer;
+    }
+}
+
+@media (max-width: 380px) {
+    .settings-topbar {
+        gap: 8px;
+        padding: 14px 10px;
+    }
+
+    .settings-menu-button {
+        width: 35px;
+        height: 35px;
+    }
+
+    .settings-topbar-heading h1 {
+        font-size: 17px;
+    }
+
+    .settings-topbar-heading p {
+        max-width: 135px;
+    }
+
+    .settings-content {
+        padding: 19px 12px;
+    }
+
+    .settings-section-heading {
+        padding: 16px 12px;
+    }
+
+    .settings-options,
+    .settings-links {
+        padding: 0 12px;
+    }
+
+    .settings-option {
+        gap: 10px;
+    }
+
+    .settings-actions {
+        flex-direction: column-reverse;
+    }
+
+    .settings-reset-button,
+    .settings-save-button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .settings-switch,
+    .settings-switch span,
+    .settings-link-arrow,
+    .settings-reset-button,
+    .settings-save-button {
+        transition: none;
+    }
+}

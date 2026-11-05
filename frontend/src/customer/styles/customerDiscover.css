@@ -1,0 +1,804 @@
+.customer-discover {
+  display: flex;
+  min-height: 100vh;
+  min-width: 0;
+  overflow-x: clip;
+  background: var(--page-bg);
+  color: var(--text-primary);
+}
+
+.discover-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--text-primary);
+}
+
+.discover-topbar {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-bg);
+  box-sizing: border-box;
+}
+
+.discover-brand {
+  color: var(--text-primary);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.discover-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--card-bg);
+  cursor: pointer;
+}
+
+.discover-menu-button span {
+  display: block;
+  width: 19px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-primary);
+}
+
+.discover-topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.discover-cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.discover-cart-link span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 23px;
+  height: 23px;
+  padding: 0 5px;
+  border-radius: 20px;
+  background: var(--hover-bg);
+  color: var(--link-color);
+  box-sizing: border-box;
+}
+
+.discover-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--hover-bg);
+  color: var(--link-color);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.discover-content {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 34px 32px 48px;
+  box-sizing: border-box;
+}
+
+.discover-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.discover-eyebrow {
+  margin: 0 0 10px;
+  color: var(--link-color);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.discover-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(25px, 3vw, 34px);
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.discover-subtitle {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.discover-saved-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.discover-saved-count span {
+  color: var(--link-color);
+  font-size: 20px;
+}
+
+.discover-search-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.discover-search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  gap: 12px;
+  padding: 0 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  background: var(--input-bg);
+  box-sizing: border-box;
+}
+
+.discover-search > span {
+  color: var(--text-secondary);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.discover-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.discover-search input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+
+.discover-search:focus-within {
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link-color) 12%, transparent);
+}
+
+.discover-sort {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.discover-sort select {
+  max-width: 190px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  outline: none;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.discover-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.discover-category {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.discover-category:hover {
+  border-color: var(--link-color);
+  color: var(--text-primary);
+}
+
+.discover-category.active {
+  border-color: transparent;
+  background: var(--primary-gradient);
+  color: #fff;
+}
+
+.discover-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.discover-results-heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.discover-results-heading p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.discover-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.discover-notice button {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.discover-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.discover-product-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--card-bg);
+  transition: transform 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.discover-product-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--link-color);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.discover-product-image {
+  position: relative;
+  height: 225px;
+  overflow: hidden;
+  background: var(--hover-bg);
+}
+
+.discover-product-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.discover-product-card:hover .discover-product-image img {
+  transform: scale(1.04);
+}
+
+.discover-wishlist-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #25324a;
+  font-size: 21px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.discover-wishlist-button:hover {
+  transform: scale(1.08);
+}
+
+.discover-wishlist-button.saved {
+  color: #e0446b;
+}
+
+.discover-product-category {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(6, 9, 20, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.discover-product-info {
+  padding: 17px;
+}
+
+.discover-seller {
+  margin: 0 0 7px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.discover-product-info h3 {
+  min-height: 42px;
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.discover-product-price {
+  margin: 0 0 17px;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.discover-product-actions {
+  display: flex;
+  gap: 9px;
+}
+
+.discover-add-button,
+.discover-details-button {
+  min-height: 41px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.discover-add-button {
+  flex: 1;
+  padding: 0 12px;
+  border: none;
+  background: var(--primary-gradient);
+  color: #fff;
+}
+
+.discover-details-button {
+  padding: 0 13px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.discover-add-button:hover,
+.discover-details-button:hover {
+  opacity: 0.85;
+}
+
+.discover-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 30px 20px;
+  border: 1px dashed var(--border-color);
+  border-radius: 14px;
+  background: var(--card-bg);
+  text-align: center;
+}
+
+.discover-empty > span {
+  color: var(--text-secondary);
+  font-size: 38px;
+}
+
+.discover-empty h3 {
+  margin: 14px 0 7px;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.discover-empty p {
+  margin: 0 0 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.discover-empty button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.discover-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.discover-product-modal {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.discover-product-modal > img {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  object-fit: cover;
+  background: var(--hover-bg);
+}
+
+.discover-modal-info {
+  padding: 34px 25px;
+}
+
+.discover-modal-info h2 {
+  margin: 0 0 10px;
+  font-size: 23px;
+  line-height: 1.35;
+}
+
+.discover-modal-price {
+  margin: 20px 0;
+  color: var(--text-primary);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.discover-modal-description {
+  margin: 0 0 25px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.discover-modal-info .discover-add-button {
+  width: 100%;
+}
+
+.discover-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.discover-backdrop {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .discover-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .discover-product-image {
+    height: 245px;
+  }
+}
+
+@media (max-width: 900px) {
+  .discover-topbar {
+    padding: 15px 22px;
+  }
+
+  .discover-content {
+    padding: 28px 22px 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  .discover-topbar {
+    min-height: 66px;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .discover-menu-button {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .discover-brand {
+    margin-right: auto;
+    font-size: 20px;
+  }
+
+  .discover-topbar-actions {
+    gap: 10px;
+  }
+
+  .discover-cart-link {
+    gap: 5px;
+    font-size: 12px;
+  }
+
+  .discover-cart-link span {
+    min-width: 20px;
+    height: 20px;
+  }
+
+  .discover-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .discover-content {
+    padding: 25px 16px 32px;
+  }
+
+  .discover-heading {
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+
+  .discover-subtitle {
+    max-width: 310px;
+    font-size: 13px;
+  }
+
+  .discover-saved-count {
+    gap: 5px;
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .discover-search-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .discover-search {
+    flex: none;
+    width: 100%;
+  }
+
+  .discover-sort {
+    justify-content: space-between;
+  }
+
+  .discover-sort select {
+    flex: 1;
+    max-width: none;
+  }
+
+  .discover-categories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-right: -16px;
+    padding: 0 16px 8px 0;
+    scrollbar-width: thin;
+  }
+
+  .discover-category {
+    flex-shrink: 0;
+  }
+
+  .discover-results-heading {
+    margin-bottom: 15px;
+  }
+
+  .discover-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .discover-product-image {
+    height: 175px;
+  }
+
+  .discover-product-info {
+    padding: 12px;
+  }
+
+  .discover-product-info h3 {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .discover-product-price {
+    font-size: 15px;
+  }
+
+  .discover-product-actions {
+    flex-direction: column;
+  }
+
+  .discover-add-button,
+  .discover-details-button {
+    width: 100%;
+    min-height: 39px;
+  }
+
+  .discover-details-button {
+    padding: 0 8px;
+  }
+
+  .discover-product-modal {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+
+  .discover-product-modal > img {
+    height: 230px;
+    min-height: 0;
+  }
+
+  .discover-modal-info {
+    padding: 23px 20px;
+  }
+
+  .discover-modal-info h2 {
+    font-size: 20px;
+  }
+
+  .discover-modal-price {
+    font-size: 20px;
+  }
+
+  .discover-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 380px) {
+  .discover-topbar {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .discover-brand {
+    font-size: 17px;
+    letter-spacing: 1px;
+  }
+
+  .discover-topbar-actions {
+    gap: 7px;
+  }
+
+  .discover-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .discover-product-grid {
+    gap: 9px;
+  }
+
+  .discover-product-image {
+    height: 145px;
+  }
+
+  .discover-product-info {
+    padding: 9px;
+  }
+
+  .discover-product-info h3 {
+    font-size: 12px;
+  }
+
+  .discover-product-price {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discover-product-card,
+  .discover-product-image img,
+  .discover-category,
+  .discover-add-button,
+  .discover-details-button,
+  .discover-wishlist-button {
+    transition: none;
+  }
+}
