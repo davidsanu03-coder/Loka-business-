@@ -5,7 +5,7 @@ import Home from './pages/Home';
 
 // auth
 import Login from './auth/login';
-import ToggleSignup from './auth/ToggleSignup';
+import ToggleSignup from './auth/toggleSignup';
 import { ThemeProvider } from './theme/ThemeContext';
 
 // theme css
